@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <style src="style/base.css"></style>
+    </head>
+    <body>
+        <script>
+            function sendButtonClickToServer(id) {
+                fetch("/buttonclickfortesting", {
+                    method: "POST",
+                    body: id
+                })
+            }
+        </script>
+
+        <h1>
+            Unnamed cc control
+        </h1>
+        <button onclick="sendButtonClickToServer('fuckyou')">
+            Fuck you.
+        </button>
+        <script src="script/auth.js"></script>
+    </body>
+</html>
