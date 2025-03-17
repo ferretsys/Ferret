@@ -24,6 +24,6 @@ jobs:
             echo "Starting server"
             npm install
             cd src
-            (&>/dev/null nohup node server &)
+            nohup server > latest.log 2>&1 &
             echo "Started server, action complete!"
             exit
