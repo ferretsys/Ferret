@@ -59,7 +59,7 @@ app.post('/validate_token', function (req, res) {
 app.use(express.static(publicDir));
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://<host>:${PORT}`);
 });
 app.use((err, req, res, next) => {
     console.error(err.stack)
