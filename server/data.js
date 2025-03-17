@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 
 export function readDataFile(src) {
     if (existsSync("./run/" + src)) {
@@ -6,6 +6,7 @@ export function readDataFile(src) {
     } else {
         console.log(src, "File does not exist, reverting to defaults");
         var content = readFileSync("./defaults/" + src);
+        mkdirSync("./run/");
         writeFileSync("./run/" + src, content);
         return content;
     }
