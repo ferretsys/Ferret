@@ -50,6 +50,9 @@ export function addPackageToNetwork(networkId, packageId, packageData) {
 export function removePackageFromNetwork(networkId, packageId) {
     delete networkData[networkId].packages[packageId];
 }
+export function removeComputerFromNetwork(networkId, computerId) {
+    delete networkComputers[networkId][computerId];
+}
 
 export function getPackageOfComputer(networkId, computerId) {
     var computerPackage = networkComputers[networkId][computerId].package;

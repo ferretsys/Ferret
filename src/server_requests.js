@@ -1,4 +1,4 @@
-import { addPackageToNetwork, getComputersOfNetwork, getFilesFromSourceForComputer, getNetworkForToken, getPackagesOfNetwork, onNetworkDataChaged, removePackageFromNetwork, setPackageOfComputer, setSourceOfComputer } from "./server.js";
+import { addPackageToNetwork, getComputersOfNetwork, getFilesFromSourceForComputer, getNetworkForToken, getPackagesOfNetwork, onNetworkComputersChaged, onNetworkDataChaged, removeComputerFromNetwork, removePackageFromNetwork, setPackageOfComputer, setSourceOfComputer } from "./server.js";
 import { getClientSourcesOfNetwork, notifyWebOfNewPackageData, sendToComputerSocket } from "./sockets.js";
 
 export function handleRequest(token, endpoint, body) {
@@ -30,9 +30,8 @@ export function handleRequest(token, endpoint, body) {
         var packages = getPackagesOfNetwork(networkId);
         if (!packages[name]) return {result: "Package with name doesen't exist!"};
 
-        var computers = getComputersOfNetwork(networkId);
-        for (var computerId in computers) {
-            var computer = computers[computerId];
+        for (var computerId in packages) {
+            var computer = packages[computerId];
             if (computer.package == name) {
                 return {result: "Package is in use!"};
             }
@@ -41,7 +40,19 @@ export function handleRequest(token, endpoint, body) {
         removePackageFromNetwork(networkId, name)
         onNetworkDataChaged(networkId);
         return {result: "Removed successfully", silent: true};
+    } else if (endpoint == "remove_computer") {
+        var computerId = body.computer_id;
+
+        var computers = getComputersOfNetwork(networkId);
+        if (!computers[computerId]) return {result: "Computer with name doesen't exist!"};
+
+        if (computers[computerId].connectedState) return {result: "Computer must be disconnected!"};
+
+        removeComputerFromNetwork(networkId, computerId)
+        onNetworkComputersChaged(networkId);
+        return {result: "Removed successfully", silent: true};
     }
+
     console.log("Unknown request endpoint", endpoint);
     return {
         "error": "unknown endpoint " + endpoint

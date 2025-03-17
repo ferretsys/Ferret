@@ -72,6 +72,11 @@ function handleComputerListDataUpdate(data) {
             });
         })
 
+        addTableListButtonCell(tableRow, "Remove", ()=>{
+            tryRemoveComputer(computerId)
+        }, "remove_computer_button_" + computerId)
+
+
         targetElement.appendChild(tableRow);
     }
 }
@@ -142,9 +147,18 @@ function tryRemovePackage(name) {
         } else {
             console.log(data.result)
         }
-        if (data.clear) {
-            document.getElementById("add_package_name").value = "";
-            document.getElementById("add_package_files").value = "";
+    });
+}
+
+function tryRemoveComputer(computerId) {
+    callServerSocketApi("remove_computer", {
+        computer_id: computerId
+    }).then((data) => {
+        console.log(data)
+        if (!data.silent) {
+            inputIssue("remove_computer_button_" + computerId, data.result)
+        } else {
+            console.log(data.result)
         }
     });
 }
