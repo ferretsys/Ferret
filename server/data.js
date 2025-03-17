@@ -6,7 +6,9 @@ export function readDataFile(src) {
     } else {
         console.log(src, "File does not exist, reverting to defaults");
         var content = readFileSync("./defaults/" + src);
-        mkdirSync("./run/");
+        if (!existsSync("./run/")) {
+            mkdirSync("./run/");
+        }
         writeFileSync("./run/" + src, content);
         return content;
     }
