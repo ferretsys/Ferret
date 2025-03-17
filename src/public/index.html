@@ -1,0 +1,64 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="style/base.css"/>
+        <title>Ferret - Main Panel</title>
+    </head>
+    <body>
+        <script>
+            function sendButtonClickToServer(id) {
+                fetch("/buttonclickfortesting", {
+                    method: "POST",
+                    body: id
+                })
+            }
+        </script>
+
+        <h1>
+            Ferret
+        </h1>
+
+        <h2>Computers</h2>
+        <table id="computers_list">
+        </table>
+
+        <h2>Packages</h2>
+        <table id="packages_list">
+        </table>
+        <table id="add_package">
+            <tr>
+                <td>Name: <input id="add_package_name"/></td>
+                <td>Files (csv): <input id="add_package_files"/></td>
+                <td><button id="add_package_button" onclick="submitNewPackage()">Add</button></td>
+            </tr>
+        </table>
+
+        <h2>Install Script</h2>
+        <input id="install_command" readonly></input>
+        <button onclick="copyInstallCommand()">
+            Copy
+        </button>
+
+        <p>
+            TODO:
+            --save data to file--
+            --local source--
+            --package creation and deletion--
+
+            optimise: send data to client either as a single thing or push data
+
+            prettier style
+            better toast types
+
+            abstract graph and io to server in panel management
+            check abs filepath in client
+            fix task not logging
+        </p>
+
+        <script src="https://unpkg.com/@popperjs/core@2"></script>
+        <script src="https://unpkg.com/tippy.js@6"></script>
+
+        <script src="script/auth.js"></script>
+        <script src="script/api_socket.js"></script>
+        <script src="script/page/index.js"></script>
+    </body>
+</html>

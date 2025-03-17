@@ -1,3 +1,0 @@
-host=ws://localhost:8080/socket/client_source
-token=ygyl1OCp3VIyPDvTl5INaMjNnNFdtQPKxQQeu6Q4mihcTq0wd2
-src=C:\Onedrive Free Coding\TestNetSource

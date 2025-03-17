@@ -1,1 +1,2 @@
-server/run/
+src/run/
+node_modules/
