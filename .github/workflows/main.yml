@@ -22,7 +22,7 @@ jobs:
             echo "Pulling latest"
             git pull
             echo "Starting server"
-            cd server
+            cd src
             (&>/dev/null nohup node server &)
             echo "Started server, action complete!"
             exit
