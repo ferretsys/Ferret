@@ -7,7 +7,7 @@ export function readDataFile(src) {
         console.log(src, "File does not exist, reverting to defaults");
         var content = readFileSync("./defaults/" + src);
         writeFileSync("./run/" + src, content);
-        return readDataFile(content);
+        return content;
     }
 }
 
