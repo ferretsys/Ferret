@@ -9,9 +9,9 @@ function getAuthKeyFromCookie() {
     return null;
 }
 
-const authKey = getAuthKeyFromCookie();
-console.log('Auth Token:', authKey);
+window.CurrentAuthKey = getAuthKeyFromCookie();
+console.log('Auth Token:', CurrentAuthKey);
 
-if (authKey == null) {
+if (CurrentAuthKey == null) {
     window.location = "/get_auth.html";
 }

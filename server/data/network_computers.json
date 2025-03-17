@@ -1,0 +1,16 @@
+{
+  "testing_net": {
+    "2": {
+      "id": 2,
+      "source": "default",
+      "package": "",
+      "connectedState": false
+    },
+    "3": {
+      "id": 3,
+      "source": "a4tnj0",
+      "package": "",
+      "connectedState": false
+    }
+  }
+}

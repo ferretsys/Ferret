@@ -1,0 +1,9 @@
+{
+  "testing_net": {
+    "default_source": {
+      "type": "github",
+      "url": "https://raw.githubusercontent.com/Computercraft-build-sys/TestNetSource/refs/heads/main/"
+    },
+    "packages": {}
+  }
+}

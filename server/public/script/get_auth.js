@@ -23,7 +23,7 @@ function loginWithToken() {
             window.location.href = "/index.html";
         } else {
             tippy("#network_token_input", {
-                content: "Server rejected token! Check you have an up to date token",
+                content: "Server rejected token! Check that it is up to date",
                 trigger: "manual",
                 delay: 500,
                 theme: "light",
