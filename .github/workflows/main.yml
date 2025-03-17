@@ -1,0 +1,27 @@
+name: Publish latest code to server
+on:
+  push:
+    branches:
+      - production
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd Ferret
+            echo "Stopping server"
+            pkill node || true
+            echo "Pulling latest"
+            git pull
+            echo "Starting server"
+            (&>/dev/null nohup node index &)
+            echo "Started server, action complete!"
+            exit
