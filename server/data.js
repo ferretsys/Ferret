@@ -4,8 +4,10 @@ export function readDataFile(src) {
     if (existsSync("./run/" + src)) {
         return JSON.parse(readFileSync("./run/" + src));
     } else {
-        console.log(src, "File does not exist, reverting to defaults")
-        return JSON.parse(readFileSync("./defaults/" + src));
+        console.log(src, "File does not exist, reverting to defaults");
+        var content = readFileSync("./defaults/" + src);
+        writeFileSync("./run/" + src);
+        return readDataFile(content);
     }
 }
 
