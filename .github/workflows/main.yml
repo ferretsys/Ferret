@@ -22,6 +22,7 @@ jobs:
             echo "Pulling latest"
             git pull
             echo "Starting server"
+            npm install
             cd src
             (&>/dev/null nohup node server &)
             echo "Started server, action complete!"
