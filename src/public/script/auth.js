@@ -17,7 +17,7 @@ if (CurrentAuthKey == null) {
 } else {
     fetch("/validate_token", {
         method: "POST",
-        body: input
+        body: CurrentAuthKey
     }).then(async (response) => {
         var response = await response.text();
         if (response != "is_valid_token") {
