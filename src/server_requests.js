@@ -1,5 +1,14 @@
 import { addPackageToNetwork, getComputersOfNetwork, getFilesFromSourceForComputer, getNetworkForToken, getPackagesOfNetwork, onNetworkComputersChaged, onNetworkDataChaged, removeComputerFromNetwork, removePackageFromNetwork, setPackageOfComputer, setSourceOfComputer } from "./server.js";
 import { getClientSourcesOfNetwork, notifyWebOfNewPackageData, sendToComputerSocket } from "./sockets.js";
+import { existsSync, readFileSync } from "fs";
+
+var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt") : "UNKNOWN";
+console.log("Found server hash " + serverHash);
+
+export var serverStatistics = {
+    hash: serverHash, 
+    connected_computers: 0
+};
 
 export function handleRequest(token, endpoint, body) {
     var networkId = getNetworkForToken(token);
@@ -9,6 +18,11 @@ export function handleRequest(token, endpoint, body) {
         return getPackagesOfNetwork(networkId);
     } else if (endpoint == "get_data_for_client_sources_list") {
         return getClientSourcesOfNetwork(networkId);
+    } else if (endpoint == "get_server_infos") {
+        return {
+            network_id: networkId,
+            stats: serverStatistics
+        }
     } else if (endpoint == "add_new_package") {
         var packages = getPackagesOfNetwork(networkId);
 

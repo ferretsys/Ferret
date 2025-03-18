@@ -147,6 +147,7 @@ export function applySockets(app) {
         var computerId = /computerid=([^;]+)/.exec(cookie)[1];
         var networkId = getNetworkForToken(networkToken);
         if (networkId == null) {
+            console.log("Rejected computer connection");
             ws.send("Invalid token")
             ws.close()
             return;
@@ -171,6 +172,7 @@ export function applySockets(app) {
         var networkToken = /authToken=([^;]+)/.exec(cookie)[1];
         var networkId = getNetworkForToken(networkToken);
         if (networkId == null) {
+            console.log("Rejected web connection");
             ws.send("Invalid token")
             ws.close()
             return;

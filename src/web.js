@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { addComputerToServer, getNetworkForToken } from "./server.js";
 import { applySockets } from "./sockets.js";
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 
 const app = express();
 expressWs(app);
@@ -33,19 +33,10 @@ app.get('/computer/install.lua', function (req, res) {
     res.end(content);
 });
 
-applySockets(app)
-
 app.post('/computer_startup', function (req, res) {
     var data = JSON.parse(req.body);
     addComputerToServer(getNetworkForToken(data.token), data.computer_id)
     res.end()
-});
-
-app.post('/buttonclickfortesting', function (req, res) {
-    var cookie = req.get("COOKIE");
-    var networkToken = /authToken=([^;]+)/.exec(cookie)[1];
-    // addComputerToServer(networkToken, 156)
-    res.send()
 });
 
 app.post('/validate_token', function (req, res) {
@@ -56,12 +47,14 @@ app.post('/validate_token', function (req, res) {
     }
 });
 
+applySockets(app);
 app.use(express.static(publicDir));
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://<host>:${PORT}`);
 });
+
 app.use((err, req, res, next) => {
     console.error(err.stack)
     next();
-  })
+})

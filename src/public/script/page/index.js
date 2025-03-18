@@ -1,42 +1,3 @@
-function addTableListCell(tableRow, elmentBuilder) {
-    var tableCell = document.createElement("td");
-    tableCell.appendChild(elmentBuilder());
-    tableRow.appendChild(tableCell);
-}
-
-function addTableListTextCell(tableRow, text) {
-    addTableListCell(tableRow, ()=> {
-        var box = document.createElement("p");
-        box.innerText = text;
-        return box;
-    });
-}
-
-function addTableListButtonCell(tableRow, text, onclick, id) {
-    addTableListCell(tableRow, ()=> {
-        var box = document.createElement("button");
-        if (id)
-            box.id = id;
-        box.innerText = text;
-        box.addEventListener("click", onclick);
-        return box;
-    });
-}
-
-function addTableListSelectCell(tableRow, values, defaultValue, onchange) {
-    addTableListCell(tableRow, ()=> {
-        var box = document.createElement("select");
-        for (var value of values) {
-            var option = document.createElement("option");
-            option.innerText = value;
-            box.appendChild(option);
-        }
-        box.value = defaultValue;
-        box.addEventListener("change", ()=>{onchange(box)});
-        return box;
-    });
-}
-
 var lastComputerData = {};
 function handleComputerListDataUpdate(data) {
     lastComputerData = data;
@@ -44,25 +5,41 @@ function handleComputerListDataUpdate(data) {
     while (targetElement.children[0]) {
         targetElement.children[0].remove()
     }
+
+    const tableHeader = document.createElement("tr");
+    tableHeader.classList.add("table-header")
+
+    addTableListTextCell(tableHeader, "Id");
+    addTableListTextCell(tableHeader, "Cn");
+    addTableListTextCell(tableHeader, "Source");
+    addTableListTextCell(tableHeader, "Package");
+    addTableListTextCell(tableHeader, "Update");
+    addTableListTextCell(tableHeader, "Remove");
+
+    targetElement.appendChild(tableHeader);
+
     for (const computerId in data) {
         const computer = data[computerId];
         const tableRow = document.createElement("tr")
         
-        for (const key in computer) {
-            addTableListTextCell(tableRow, key + " : " + computer[key])
-        }
+        addTableListTextCell(tableRow, computer.id);
+        addTableColorIndicatorCell(tableRow, computer.connectedState ? "var(--status-ok)" : "var(--status-error)");
 
-        addTableListSelectCell(tableRow, ["default", ...avaliableClientSources], computer.source, (box)=>{
+        addTableListSelectCell(tableRow, ["default", ...avaliableClientSources], computer.source, (value)=>{
             emitServerSocketApi("set_computer_source", {
                 computer_id: computerId,
-                source: box.value
+                source: value
             });
         })
 
-        addTableListSelectCell(tableRow, ["", ...Object.keys(avaliablePackages)], computer.package ? computer.package : "", (box)=>{
+        var packageDropdownOptions = convertPackageNamesToTree((Object.keys(avaliablePackages)));
+        packageDropdownOptions.entries = packageDropdownOptions.entries || [];
+        packageDropdownOptions.entries.push({value: null, text: "No package", class: "dropdown-option-no-package"});
+        
+        addTableTreeSelectCell(tableRow, packageDropdownOptions, computer.package || "No package", (value)=>{
             emitServerSocketApi("set_computer_package", {
                 computer_id: computerId,
-                package: box.value
+                package: value
             });
         })
 
@@ -81,6 +58,35 @@ function handleComputerListDataUpdate(data) {
     }
 }
 
+function convertPackageNamesToTree(packageNames) {
+    var baseNode = {};
+    function walkAdd(node, directoryToWalk, entry) {
+        if (directoryToWalk.length == 0) {
+            node.entries = node.entries || [];
+            node.entries.push(entry);
+        } else {
+            var nextDirectory = directoryToWalk.shift();
+            node.children = node.children || {};
+            node.children[nextDirectory] = node.children[nextDirectory] || {};
+            node.children[nextDirectory].name = nextDirectory;
+            walkAdd(node.children[nextDirectory], directoryToWalk, entry);
+        }
+    }
+
+    for (var packageId of packageNames) {
+        var packageDirectory = packageId.split(".");
+        var name = packageDirectory.pop();
+        var entry = {
+            text: name,
+            value: packageId
+        };
+        walkAdd(baseNode, packageDirectory, entry);
+    }
+
+    // console.log(baseNode);
+    return baseNode;
+}
+
 var avaliablePackages = {};
 function handlePackagesListDataUpdate(data) {
     avaliablePackages = data;
@@ -89,13 +95,23 @@ function handlePackagesListDataUpdate(data) {
     while (targetElement.children[0]) {
         targetElement.children[0].remove()
     }
+    
+    const tableHeader = document.createElement("tr");
+    tableHeader.classList.add("table-header")
+
+    addTableListTextCell(tableHeader, "Name");
+    addTableListTextCell(tableHeader, "File List");
+    addTableListTextCell(tableHeader, "Delete");
+
+    targetElement.appendChild(tableHeader);
+    
     for (const packageName in data) {
         const package = data[packageName];
-        const tableRow = document.createElement("tr")
+        const tableRow = document.createElement("tr");
         
         addTableListTextCell(tableRow, packageName)
         for (var k of package.files) {
-            addTableListTextCell(tableRow, "file:" + k);
+            addTableListTextCell(tableRow, k);
         }
 
         addTableListButtonCell(tableRow, "Delete", ()=>{
@@ -190,6 +206,23 @@ function copyInstallCommand() {
     copyText.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(copyText.value);
 }
+
+function updateStats() {
+    callServerSocketApi("get_server_infos").then((data) => {
+        document.getElementById("network_id").innerText = "(" + data.network_id + ")";
+        var entries = [];
+        for (var key in data.stats) {
+            var value = data.stats[key];
+            if (key == "hash") {
+                value = `<a href='https://github.com/ferretsys/Ferret/commit/${value}'>${value}</a>`
+            }
+            entries.push(key + " - " + value);
+        }
+        document.getElementById("server_stats").innerHTML = `server info: ${entries.join(" / ")}`;
+    });
+}
+updateStats();
+setInterval(updateStats, 10000);
 
 document.getElementById("install_command").value =
     "wget run " + window.location.origin + "/computer/install.lua?token=" + CurrentAuthKey +
