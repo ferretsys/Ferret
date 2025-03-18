@@ -2,7 +2,7 @@ import { addPackageToNetwork, getComputersOfNetwork, getFilesFromSourceForComput
 import { getClientSourcesOfNetwork, notifyWebOfNewPackageData, sendToComputerSocket } from "./sockets.js";
 import { existsSync, readFileSync } from "fs";
 
-var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt") : "UNKNOWN";
+var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt").toString() : "UNKNOWN";
 console.log("Found server hash " + serverHash);
 
 export var serverStatistics = {
