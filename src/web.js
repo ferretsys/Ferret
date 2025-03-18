@@ -33,12 +33,6 @@ app.get('/computer/install.lua', function (req, res) {
     res.end(content);
 });
 
-var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt") : "UNKNOWN";
-console.log("Found server hash " + serverHash)
-app.get('/server_commit_hash', function (req, res) {
-    res.end(serverHash);
-});
-
 app.post('/computer_startup', function (req, res) {
     var data = JSON.parse(req.body);
     addComputerToServer(getNetworkForToken(data.token), data.computer_id)

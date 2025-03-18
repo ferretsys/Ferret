@@ -1,12 +1,18 @@
 import {} from "./web.js";
 import { readDataFile, saveDataFile } from "./data.js";
 import { getFileFromClientSourceForComputer, notifyWebOfNewComputerData, notifyWebOfNewPackageData } from "./sockets.js";
+import { serverStatistics } from "./server_requests.js";
 
 var networks = readDataFile("networks.json");
 var networkData = readDataFile("network_data.json");
 var networkComputers = readDataFile("network_computers.json");
 
 verifyDataIntegrity();
+for (var networkId of Object.keys(networks)) {
+    for (var networkComputer in networkComputers[networkId]) {
+        networkComputers[networkId][networkComputer].connectedState = false;
+    }
+}
 
 function verifyDataIntegrity() {
     var changed = false;
@@ -145,11 +151,14 @@ export async function getFilesFromSourceForComputer(networkId, computerId) {
 
 export function updateConnectedComputers(networkId, computerConnections) {
     var connectedComputers = {};
+    var count = 0;
     for (var connection of computerConnections) {
-        connectedComputers[connection.computerId] = true
+        connectedComputers[connection.computerId] = true;
+        count++;
     }
     for (var computerid in networkComputers[networkId]) {
         networkComputers[networkId][computerid].connectedState = connectedComputers[computerid] != undefined;
     }
+    serverStatistics.connected_computers = count;
     onNetworkComputersChaged(networkId);
 }
