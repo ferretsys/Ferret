@@ -1,3 +1,22 @@
+:root {
+  --button-color: rgb(240, 240, 240);
+
+  --body-bg1: rgb(253, 253, 254);
+  --body-bg2: rgb(251, 251, 252);
+  --body-bg3: rgb(240, 240, 240);
+
+  --text-col1: rgb(10, 10, 15);
+  --text-col2: rgb(37, 37, 39);
+  --text-col3: rgb(51, 51, 56);
+  --text-col4: rgb(109, 109, 113);
+  --text-col5: rgb(202, 202, 210);
+  --status-ok: rgb(96, 226, 84);
+  --status-error: rgb(226, 84, 84);
+
+  --indent-border: rgba(0.5, 0.5, 0.5, 0.05);
+  --soft-border: rgba(0.5, 0.5, 0.5, 0.5);
+}
+
 body {
   font-family: "Source Code Pro", monospace;
 }
@@ -6,4 +25,56 @@ td, th {
   border: 1px solid #dddddd;
   text-align: left;
   padding: 8px;
+}
+
+input {
+  border-radius: 0;
+  border: 2px solid var(--indent-border);
+  font-family: unset;
+  padding: 5px;
+  outline: 0;
+  cursor: pointer;
+}
+
+input:focus {
+  border: 2px solid var(--soft-border);
+}
+
+body {
+  color: var(--text-col2);
+  margin: 0;
+}
+
+h1, a, button {
+  color: var(--text-col1);
+}
+
+button {
+  border-radius: 0;
+  border: 2px solid rgba(0.5, 0.5, 0.5, 0.1);
+  font-family: unset;
+  padding: 5px;
+  cursor: pointer;
+}
+
+header {
+  background-color: var(--body-bg3);
+  padding: 0px 40px;
+  margin: 10px 0;
+}
+
+header > * {
+  margin: 0;
+  padding: 5px 0;
+}
+
+header > h1 {
+  padding: 10px 0;
+}
+
+content {
+  display: block;
+  width: 100vw;
+  padding: 0 10vw;
+  box-sizing: border-box;
 }

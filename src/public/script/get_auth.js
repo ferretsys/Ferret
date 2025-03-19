@@ -31,3 +31,40 @@ function loginWithToken() {
         }
     })
 }
+
+
+
+function fillInRecentTokens(recentTokens) {
+    var target = document.getElementById("network_token_recent");
+    for (const token of recentTokens) {
+        var button = document.createElement("button");
+        button.innerText = token.target + " (" + token.value + ")";
+        button.addEventListener("click", () => {
+            document.getElementById("network_token_input").value = token.value;
+        });
+        target.appendChild(button);
+    }
+}
+
+function getRecentCookiesFromToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [key, value] = cookie.trim().split('=');
+        if (key === 'recent_tokens') {
+            return decodeURIComponent(value);
+        }
+    }
+    return null;
+}
+
+var recent = getRecentCookiesFromToken();
+if (recent) {
+    var tokens = recent.split(",");
+    tokens = tokens.map((tokenString) => {
+        return {
+            name: tokenString.split(":")[0],
+            token: tokenString.split(":")[1]
+        }
+    })
+    fillInRecentTokens();
+}

@@ -1,18 +1,22 @@
 <html>
     <head>
         <link rel="stylesheet" href="style/base.css"/>
+        <link rel="stylesheet" href="style/auth.css"/>
     </head>
     <body>
-        <h1>
-            Unnamed cc control - Sign in
-        </h1>
+        <header>
+            <h1>Unnamed cc control - Sign in</h1>
+        </header>
 
-        <input id="network_token_input"></input>
+        <content>
+            <input id="network_token_input" autocomplete="one-time-code"></input>
 
-        <button onclick="loginWithToken()">
-            Log in to network
-        </button>
-
+            <button onclick="loginWithToken()">
+                Log in to network
+            </button>
+            <div id="network_token_recent"></div>
+        </content>
+        
         <script src="https://unpkg.com/@popperjs/core@2"></script>
         <script src="https://unpkg.com/tippy.js@6"></script>
 
