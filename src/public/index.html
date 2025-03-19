@@ -19,11 +19,11 @@
         </script>
 
         <header>
-            <h1>ferret <span id="network_id"></span></h1>
+            <h1>ferret <span id="network_id">(network id...)</span> <button id="signout" onclick="signout()"><img id="signout_image" src = "/img/icon/signout.svg"/></button></h1>
             <p id="server_stats">loading stats...</p>
         </header>
 
-        <div class="content-container">
+        <content>
             <h2>Computers</h2>
             <div class="indented-container">
                 <table id="computers_list">
@@ -36,15 +36,15 @@
                 </table>
                 <table id="add_package">
                     <tr>
-                        <td>Name: <input id="add_package_name"/></td>
-                        <td>Files (csv): <input id="add_package_files"/></td>
+                        <td>Name: <input id="add_package_name" autocomplete="one-time-code"/></td>
+                        <td>Files (csv): <input id="add_package_files" autocomplete="one-time-code"/></td>
                         <td><button id="add_package_button" onclick="submitNewPackage()">Add</button></td>
                     </tr>
                 </table>
             </div>
     
             <h2>Install Script</h2>
-            <input id="install_command" readonly></input>
+            <input id="install_command" readonly autocomplete="one-time-code"></input>
             <button onclick="copyInstallCommand()">
                 Copy
             </button>
@@ -66,7 +66,7 @@
                 check abs filepath in client
                 fix task not logging
             </p>
-        </div>
+        </content>
 
         <script src="https://unpkg.com/@popperjs/core@2"></script>
         <script src="https://unpkg.com/tippy.js@6"></script>

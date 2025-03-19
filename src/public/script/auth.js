@@ -25,3 +25,8 @@ if (CurrentAuthKey == null) {
         }
     })
 }
+
+function signout() {
+    document.cookie = "authToken=none;expires=" + new Date(0).toUTCString() + ";";
+    window.location.href = "/get_auth.html"
+}

@@ -1,45 +1,7 @@
 import {} from "./web.js";
-import { readDataFile, saveDataFile } from "./data.js";
+import { networkComputers, networkData, networks, saveDataFile } from "./data.js";
 import { getFileFromClientSourceForComputer, notifyWebOfNewComputerData, notifyWebOfNewPackageData } from "./sockets.js";
 import { serverStatistics } from "./server_requests.js";
-
-var networks = readDataFile("networks.json");
-var networkData = readDataFile("network_data.json");
-var networkComputers = readDataFile("network_computers.json");
-
-verifyDataIntegrity();
-for (var networkId of Object.keys(networks)) {
-    for (var networkComputer in networkComputers[networkId]) {
-        networkComputers[networkId][networkComputer].connectedState = false;
-    }
-}
-
-function verifyDataIntegrity() {
-    var changed = false;
-    for (var networkId in networks) {
-        if (!networkData[networkId]) {
-            console.log("Network was partially missing! Adding data entry, however git will default to testing");
-            networkData[networkId] = {
-                default_source: {
-                    type: "github",
-                    url: "https://raw.githubusercontent.com/ferretsys/TestNetSource/refs/heads/main/"
-                },
-                packages: {}
-            };
-            changed = true;
-        }
-        if (!networkComputers[networkId]) {
-            console.log("Network was partially missing! Adding computers entry");
-            networkComputers[networkId] = {
-            };
-            changed = true;
-        }
-    }
-    if (changed) {
-        saveDataFile("network_computers.json", networkData);    
-        saveDataFile("network_data.json", networkData);
-    }
-}
 
 export function onNetworkDataChaged(networkId) {
     saveDataFile("network_data.json", networkData);
