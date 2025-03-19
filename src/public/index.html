@@ -20,7 +20,13 @@
         </script>
 
         <header>
-            <h1>ferret <span id="network_id">(network id...)</span> <button id="signout" onclick="signout()"><img id="signout_image" src = "/img/icon/signout.svg"/></button></h1>
+            <h1>ferret <span id="network_id">(network id...)</span>
+                <button id="signout" onclick="signout()" class="soft_button">
+                    <svg id = "signout_image" viewBox="0 0 6 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 3V1.5C1 1.22386 1.22386 1 1.5 1H4.5C4.77614 1 5 1.22386 5 1.5V6.5C5 6.77614 4.77614 7 4.5 7H1.5C1.22386 7 1 6.77614 1 6.5V5M0 4H2.5M3.5 4L2.5 3V5L3.5 4Z" stroke="black" stroke-width="1"/>
+                    </svg>
+                </button>
+            </h1>
             <p id="server_stats">loading stats...</p>
         </header>
 

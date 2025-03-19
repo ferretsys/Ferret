@@ -40,10 +40,16 @@ app.post('/computer_startup', function (req, res) {
 });
 
 app.post('/validate_token', function (req, res) {
-    if (getNetworkForToken(req.body) != null) {
-        res.end("is_valid_token")
+    var networkId = getNetworkForToken(req.body);
+    if (networkId) {
+        res.end(JSON.stringify({
+            type: "is_valid_token",
+            network_id: networkId
+        }));
     } else { 
-        res.end("is_invalid_token")
+        res.end(JSON.stringify({
+            type: "is_invalid_token"
+        }))
     }
 });
 

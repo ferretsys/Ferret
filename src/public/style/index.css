@@ -15,6 +15,14 @@
     cursor: pointer;
 }
 
+#signout_image {
+    height: 1em;
+}
+
+#signout_image path {
+    stroke: var(--soft-border);
+}
+
 .dropdown-selector-options {
     position: absolute;
     background-color: var(--body-bg2);
