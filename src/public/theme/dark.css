@@ -1,0 +1,18 @@
+:root {
+    --button-color: rgb(25, 25, 29);
+
+    --body-bg1: rgb(15, 15, 17);
+    --body-bg2: rgb(10, 10, 12);
+    --body-bg3: rgb(5, 5, 7);
+
+    --text-col1: rgb(236, 236, 238);
+    --text-col2: rgb(202, 202, 210);
+    --text-col3: rgb(179, 179, 182);
+    --text-col4: rgb(144, 144, 146);
+    --text-col5: rgb(109, 109, 113);
+    --status-ok: rgb(45, 192, 31);
+    --status-error: rgb(192, 36, 31);
+
+    --indent-border: rgba(255, 255, 255, 0.5);
+    --soft-border: rgba(255, 255, 255, 0.5);
+}
