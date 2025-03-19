@@ -137,7 +137,7 @@ function submitNewPackage() {
     if (nameInput == "") return inputIssue("add_package_name", "Must not be empty");
     if (!/^[a-zA-Z 0-9\.]*$/.test(nameInput)) return inputIssue("add_package_name", "Invalid (can only be a-z, A-Z, 0-9, . or space)");
     if (filesInput == "") return inputIssue("add_package_files", "Must not be empty");
-    if (!/^[a-zA-Z 0-9\.\/-]*$/.test(filesInput)) return inputIssue("add_package_files", "Invalid (can only be a-z, A-Z, 0-9, '.', ',', '-', '/' or space)");
+    if (!/^[a-zA-Z 0-9\.,\/-]*$/.test(filesInput)) return inputIssue("add_package_files", "Invalid (can only be a-z, A-Z, 0-9, '.', ',', '-', '/' or space)");
     callServerSocketApi("add_new_package", {
         name: nameInput,
         files: filesInput

@@ -29,7 +29,7 @@ export function handleRequest(token, endpoint, body) {
         var name = body.name;
         var files = body.files;
 
-        if (!/^[a-zA-Z 0-9\.]*$/.test(name) && !/^[a-zA-Z 0-9\.\/-]*$/.test(files)) return {result: "Server rejected input"};
+        if (!/^[a-zA-Z 0-9\.]*$/.test(name) && !/^[a-zA-Z 0-9\.,\/-]*$/.test(files)) return {result: "Server rejected input"};
 
         if (packages[name]) return {result: "Package with name already exists!"};
 
