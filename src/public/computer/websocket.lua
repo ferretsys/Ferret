@@ -61,14 +61,14 @@ local function checkForNetworkEvents(event)
     if data.type == "action" then
         if data.action == "refresh_computer_source" then
             print("Refreshing source")
-            shell.run("rm /package/")
-            shell.run("mkdir package")
+            shell.run("rm /src/")
+            shell.run("mkdir src")
             local startup = ""
             for index, fileData in ipairs(data.files) do
                 if endsWith(fileData.name, "-startup.lua") then
                     startup = fileData.name
                 end
-                WriteAllFile("package/" .. fileData.name, fileData.content)
+                WriteAllFile("src/" .. fileData.name, fileData.content)
             end
             WriteAllFile("startup.txt", startup)
             print("Rebooting...")

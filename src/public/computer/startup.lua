@@ -30,7 +30,7 @@ local startup = ReadAllFile("startup.txt")
 
 local function RunStartupThread()
     if startup ~= "" then
-        require("package." .. string.sub(startup, 1, string.len(startup) - 4))
+        require("src/" .. string.sub(startup, 1, string.len(startup) - 4))
     else
         print("No startup specified")
     end
