@@ -19,8 +19,8 @@ if (CurrentAuthKey == null) {
         method: "POST",
         body: CurrentAuthKey
     }).then(async (response) => {
-        var response = await response.text();
-        if (response != "is_valid_token") {
+        var response = await response.json();
+        if (response.type != "is_valid_token") {
             window.location.href = "/get_auth.html";
         }
     })
