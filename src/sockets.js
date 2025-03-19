@@ -94,10 +94,11 @@ function getNextRequestId() {
 
 var requestPromises = {};
 export function getFileFromClientSourceForComputer(sourceId, filename) {
-    return requestClientSourceSocket(
-        clientSourceConnections.find(connection => connection.sourceId = sourceId).socket,
+    var connection = clientSourceConnections.find(connection => connection.sourceId == sourceId);
+    return connection ? requestClientSourceSocket(
+        connection.socket,
         filename
-    );
+    ) : null;
 }
 
 async function requestClientSourceSocket(socket, filename) {

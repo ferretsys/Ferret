@@ -75,7 +75,8 @@ export function getSourceOfComputer(networkId, computerId) {
 }
 
 export async function getFileFromSourceForComputer(networkId, computerId, filename) {
-    var sourceId = networkComputers[networkId][computerId].source;
+        console.log("Fetching file", networkId, computerId, filename);
+        var sourceId = networkComputers[networkId][computerId].source;
     if (sourceId == "default") {
         var defaultSource = networkData[networkId].default_source;
         if (defaultSource.type != "github") {
@@ -86,13 +87,13 @@ export async function getFileFromSourceForComputer(networkId, computerId, filena
     } else {
         console.log("Fetching from client source")
         var clientSourceResult = await getFileFromClientSourceForComputer(sourceId, filename);
-        console.log(clientSourceResult);
         if (clientSourceResult == null) {
             networkComputers[networkId][computerId].source = "default";
             console.log("Client fetch failed, reverting to default");
             onNetworkComputersChaged(networkId);
             clientSourceResult = await getFileFromSourceForComputer(networkId, computerId, filename);
         }
+        console.log("Client fetch successful, reverting to default")
         return clientSourceResult;
     }
 }
