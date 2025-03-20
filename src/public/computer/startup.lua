@@ -48,7 +48,7 @@ local function RunStartupThread()
             print("Error in startup program", err)
             SendRawToServer({
                 type="computer_notify_ferret_state",
-                state="package_error" + err,
+                state="package_error" .. err,
                 order=2
             });
         end
