@@ -75,7 +75,6 @@ export function getSourceOfComputer(networkId, computerId) {
 }
 
 export async function getFileFromSourceForComputer(networkId, computerId, filename) {
-    //TODO add the actual handling
     console.log("Fetching file", networkId, computerId, filename);
     var sourceId = networkComputers[networkId][computerId].source;
     if (sourceId == "default") {
@@ -84,15 +83,16 @@ export async function getFileFromSourceForComputer(networkId, computerId, filena
             throw "Unknown code source type  " + defaultSource.type;
         }
         console.log("Fetching " + defaultSource.url + filename)
-        return await fetch(defaultSource.url + filename, {cache: "no-store"}).then(async response => await response.text())
+        return await fetch(defaultSource.url + filename, {cache: "no-store"})
+            .then(async response => response.status == 200 ? await response.text() : null);
     } else {
         console.log("Fetching from client source")
-        var clientSourceResult = await getFileFromClientSourceForComputer(sourceId, filename);
-        if (clientSourceResult == null) {
+        var [connectionPresent, clientSourceResult] = await getFileFromClientSourceForComputer(sourceId, filename);
+        if (!connectionPresent) {
+            console.log("Client fetch failed - missing connection");
             networkComputers[networkId][computerId].source = "default";
-            console.log("Client fetch failed, reverting to default");
             onNetworkComputersChaged(networkId);
-            clientSourceResult = await getFileFromSourceForComputer(networkId, computerId, filename);
+            return await getFileFromSourceForComputer(networkId, computerId, filename);
         }
         console.log("Client fetch successful, reverting to default")
         return clientSourceResult;
@@ -105,9 +105,14 @@ export async function getFilesFromSourceForComputer(networkId, computerId) {
     
     var fileData = []
     for (var filename of packaged.files) {
+        var content = await getFileFromSourceForComputer(networkId, computerId, filename);
+        if (content == null) {       
+            console.log("Failed to fetch files from source", networkId, computerId, filename);
+            return null;
+        }
         fileData.push({
             name: filename,
-            content: await getFileFromSourceForComputer(networkId, computerId, filename) || "404",
+            content: content,
         })
     }
     return fileData;

@@ -1,9 +1,11 @@
+import { networkComputers } from "./data.js";
 import { getComputersOfNetwork, getFilesFromSourceForComputer, getNetworkForToken, getPackagesOfNetwork, getSourceOfComputer, updateConnectedComputers } from "./server.js";
 import { handleEmit, handleRequest } from "./server_requests.js";
+import { applyComputerSockets } from "./sockets/computer.js";
 
-var computerConnections = [];
-var webConnections = [];
-var clientSourceConnections = [];
+export var computerConnections = [];
+export var webConnections = [];
+export var clientSourceConnections = [];
 
 function handleWebSocketMessage(connection, data) {
     if (data.type == "request") {
@@ -13,7 +15,7 @@ function handleWebSocketMessage(connection, data) {
             response: handleRequest(connection.networkToken, data.endpoint, data.body)
         }));
     } else if (data.type == "emit") {
-        handleEmit(connection.networkToken, data.endpoint, data.body)
+        handleEmit(connection, connection.networkToken, data.endpoint, data.body)
     }
 }
 
@@ -25,11 +27,15 @@ async function handleClientSourceSocketMessage(connection, data) {
             var source = getSourceOfComputer(computerConnection.networkId, computerConnection.computerId);
             if (source == connection.sourceId) {
                 reloadedCount++;
-                sendToComputerSocket(computerConnection.networkId, computerConnection.computerId, {
-                    type: "action",
-                    action: "refresh_computer_source",
-                    files: await getFilesFromSourceForComputer(computerConnection.networkId, computerConnection.computerId)
-                });
+                var files = await getFilesFromSourceForComputer(computerConnection.networkId, computerConnection.computerId);
+                networkComputers[computerConnection.computerId].packageState = files == null ? "bad" : "ok";
+                if (files != null) {
+                    sendToComputerSocket(computerConnection.networkId, computerConnection.computerId, {
+                        type: "action",
+                        action: "refresh_computer_source",
+                        files: files
+                    });
+                }
             }
         }
     }
@@ -39,10 +45,18 @@ async function handleClientSourceSocketMessage(connection, data) {
 export function notifyWebOfNewComputerData(networkId) {
     for (var connection of webConnections) {
         if (connection.networkId == networkId) {
+            var content = getComputersOfNetwork(networkId);
+            
+            //Old and new systems
             connection.socket.send(JSON.stringify({
                 type: "refresh_content",
                 content_id: "computers_list",
-                content: getComputersOfNetwork(networkId)
+                content: content
+            }));
+            connection.socket.send(JSON.stringify({
+                type: "data_table_content",
+                source: "computers",
+                content: content
             }));
         }
     }
@@ -51,10 +65,17 @@ export function notifyWebOfNewComputerData(networkId) {
 export function notifyWebOfNewPackageData(networkId) {
     for (var connection of webConnections) {
         if (connection.networkId == networkId) {
+            var content = getPackagesOfNetwork(networkId);
+            
             connection.socket.send(JSON.stringify({
                 type: "refresh_content",
                 content_id: "packages_list",
-                content: getPackagesOfNetwork(networkId)
+                content: content
+            }));
+            connection.socket.send(JSON.stringify({
+                type: "data_table_content",
+                source: "packages",
+                content: content
             }));
         }
     }
@@ -78,7 +99,9 @@ export function notifyWebOfNewClientSourceData(networkId, clientSourceConnection
 export function sendToComputerSocket(networkId, computerId, data) {
     for (var connection of computerConnections) {
         if (connection.networkId == networkId && connection.computerId == computerId) {
+            connection.updateLastNetworkTime();
             connection.socket.send(JSON.stringify(data));
+            return;
         }
     }
 }
@@ -93,12 +116,17 @@ function getNextRequestId() {
 }
 
 var requestPromises = {};
-export function getFileFromClientSourceForComputer(sourceId, filename) {
+export async function getFileFromClientSourceForComputer(sourceId, filename) {
     var connection = clientSourceConnections.find(connection => connection.sourceId == sourceId);
-    return connection ? requestClientSourceSocket(
-        connection.socket,
-        filename
-    ) : null;
+    return [
+        Boolean(connection), connection ? await requestClientSourceSocket(
+            connection.socket,
+            filename
+        ).then((response) => {
+            console.log(response);
+            return response.result == "success" ? response.response : null
+        }) : null
+    ];
 }
 
 async function requestClientSourceSocket(socket, filename) {
@@ -141,31 +169,7 @@ function randomSourceCode() {
 }
 
 export function applySockets(app) {
-    app.ws("/socket/computer", function (ws, req) {
-        console.log("New connection by computer");
-        var cookie = req.get("COOKIE");
-        var networkToken = /authToken=([^;]+)/.exec(cookie)[1];
-        var computerId = /computerid=([^;]+)/.exec(cookie)[1];
-        var networkId = getNetworkForToken(networkToken);
-        if (networkId == null) {
-            console.log("Rejected computer connection");
-            ws.send("Invalid token")
-            ws.close()
-            return;
-        }
-        computerConnections.push({
-            socket: ws,
-            networkToken: networkToken,
-            networkId: networkId,
-            computerId: computerId
-        });
-        updateConnectedComputers(networkId, computerConnections);
-        ws.on('close', function () {
-            console.log("Computer connection closed");
-            computerConnections.splice(computerConnections.indexOf(ws), 1);
-            updateConnectedComputers(networkId, computerConnections);
-        });
-    });
+    applyComputerSockets(app);
     
     app.ws("/socket/web", function (ws, req) {
         console.log("New connection by web");

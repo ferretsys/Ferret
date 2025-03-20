@@ -1,3 +1,4 @@
+import { networkComputers } from "./data.js";
 import { addPackageToNetwork, getComputersOfNetwork, getFilesFromSourceForComputer, getNetworkForToken, getPackagesOfNetwork, onNetworkComputersChaged, onNetworkDataChaged, removeComputerFromNetwork, removePackageFromNetwork, setPackageOfComputer, setSourceOfComputer } from "./server.js";
 import { getClientSourcesOfNetwork, notifyWebOfNewPackageData, sendToComputerSocket } from "./sockets.js";
 import { existsSync, readFileSync } from "fs";
@@ -73,14 +74,30 @@ export function handleRequest(token, endpoint, body) {
     }
 }
 
-export async function handleEmit(token, endpoint, body) {
+export async function handleEmit(connection, token, endpoint, body) {
     var networkId = getNetworkForToken(token);
+    if (endpoint == "needs_data_for_table_content") {
+        if (body.source == "computers") {
+            connection.socket.send(JSON.stringify({
+                type: "data_table_content",
+                source: "computers",
+                content: getComputersOfNetwork(networkId)
+            }));
+        } else {
+            console.log("Unknown source for table prefetch", body.source)
+        }
+        return;
+    }
     if (endpoint == "refresh_computer_source") {
-        sendToComputerSocket(networkId, body.computer_id, {
-            type: "action",
-            action: "refresh_computer_source",
-            files: await getFilesFromSourceForComputer(networkId, body.computer_id)
-        });
+        var files = await getFilesFromSourceForComputer(networkId, body.computer_id);
+        networkComputers[networkId][body.computer_id].packageState = files == null ? "bad" : "ok";
+        if (files != null) {
+            sendToComputerSocket(networkId, body.computer_id, {
+                type: "action",
+                action: "refresh_computer_source",
+                files: await getFilesFromSourceForComputer(networkId, body.computer_id)
+            });
+        }
         return;
     }
     if (endpoint == "set_computer_package") {

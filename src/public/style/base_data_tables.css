@@ -45,3 +45,7 @@
 .tree-selector-group-label {
   padding: 5px;
 }
+
+.heartbeat-indicator {
+  animation-timing-function: ease-in-out;
+}

@@ -10,7 +10,13 @@
   --text-col3: rgb(51, 51, 56);
   --text-col4: rgb(109, 109, 113);
   --text-col5: rgb(202, 202, 210);
+
+  --status-none: rgb(109, 109, 113);
+  --status-heartbeat: rgb(111, 214, 255);
   --status-ok: rgb(96, 226, 84);
+  --status-bad: rgb(226, 84, 84);
+  --status-null: rgb(247, 0, 255);
+  
   --status-error: rgb(226, 84, 84);
 
   --hard-border: rgba(0, 0, 0, 0.5);
@@ -98,4 +104,8 @@ content {
   width: 100vw;
   padding: 0 10vw;
   box-sizing: border-box;
+}
+
+.tippy-content {
+  color: white;
 }

@@ -1,9 +1,9 @@
-var context = getCurrentLoadContext();
+var legacy_main_context = getCurrentLoadContext();
 
 var lastComputerData = {};
 function handleComputerListDataUpdate(data) {
     lastComputerData = data;
-    var targetElement = context.getElementById("computers_list");
+    var targetElement = legacy_main_context.getElementById("computers_list");
     while (targetElement.children[0]) {
         targetElement.children[0].remove()
     }
@@ -27,7 +27,7 @@ function handleComputerListDataUpdate(data) {
         addTableListTextCell(tableRow, computer.id);
         addTableColorIndicatorCell(tableRow, computer.connectedState ? "var(--status-ok)" : "var(--status-error)");
 
-        addTableListSelectCell(tableRow, ["default", ...avaliableClientSources], computer.source, (value)=>{
+        addTableListSelectCell(tableRow, ["default", ...avaliableClientSources], computer.source, (value) => {
             emitServerSocketApi("set_computer_source", {
                 computer_id: computerId,
                 source: value
@@ -38,20 +38,20 @@ function handleComputerListDataUpdate(data) {
         packageDropdownOptions.entries = packageDropdownOptions.entries || [];
         packageDropdownOptions.entries.push({value: null, text: "No package", class: "dropdown-option-no-package"});
         
-        addTableTreeSelectCell(tableRow, packageDropdownOptions, computer.package || "No package", (value)=>{
+        addTableTreeSelectCell(tableRow, packageDropdownOptions, computer.package || "No package", (value) => {
             emitServerSocketApi("set_computer_package", {
                 computer_id: computerId,
                 package: value.value
             });
         })
 
-        addTableListButtonCell(tableRow, "Refresh Source", ()=>{
+        addTableListButtonCell(tableRow, "Refresh Source", () => {
             emitServerSocketApi("refresh_computer_source", {
                 computer_id: computerId
             });
         })
 
-        addTableListButtonCell(tableRow, "Remove", ()=>{
+        addTableListButtonCell(tableRow, "Remove", () => {
             tryRemoveComputer(computerId)
         }, "remove_computer_button_" + computerId)
 
@@ -92,7 +92,7 @@ var avaliablePackages = {};
 function handlePackagesListDataUpdate(data) {
     avaliablePackages = data;
     handleComputerListDataUpdate(lastComputerData);
-    var targetElement = context.getElementById("packages_list");
+    var targetElement = legacy_main_context.getElementById("packages_list");
     while (targetElement.children[0]) {
         targetElement.children[0].remove()
     }
@@ -115,7 +115,7 @@ function handlePackagesListDataUpdate(data) {
             addTableListTextCell(tableRow, k);
         }
 
-        addTableListButtonCell(tableRow, "Delete", ()=>{
+        addTableListButtonCell(tableRow, "Delete", () => {
             tryRemovePackage(packageName)
         }, "remove_package_button_" + packageName.replaceAll(".", "_"))
 
@@ -133,8 +133,8 @@ function inputIssue(id, reason) {
 }
 
 function submitNewPackage() {
-    var nameInput = context.getElementById("add_package_name").value;
-    var filesInput = context.getElementById("add_package_files").value;
+    var nameInput = legacy_main_context.getElementById("add_package_name").value;
+    var filesInput = legacy_main_context.getElementById("add_package_files").value;
     if (nameInput == "") return inputIssue("add_package_name", "Must not be empty");
     if (!/^[a-zA-Z 0-9\.]*$/.test(nameInput)) return inputIssue("add_package_name", "Invalid (can only be a-z, A-Z, 0-9, . or space)");
     if (filesInput == "") return inputIssue("add_package_files", "Must not be empty");
@@ -149,8 +149,8 @@ function submitNewPackage() {
             console.log(data.result)
         }
         if (data.clear) {
-            context.getElementById("add_package_name").value = "";
-            context.getElementById("add_package_files").value = "";
+            legacy_main_context.getElementById("add_package_name").value = "";
+            legacy_main_context.getElementById("add_package_files").value = "";
         }
     });
 }
@@ -201,7 +201,7 @@ callServerSocketApi("get_data_for_client_sources_list").then((clientSources) => 
 });
 
 function copyInstallCommand() {
-    var copyText = context.getElementById("install_command");
+    var copyText = legacy_main_context.getElementById("install_command");
 
     copyText.select();
     copyText.setSelectionRange(0, 99999);
@@ -209,17 +209,17 @@ function copyInstallCommand() {
 }
 
 function copyClientCommand() {
-    var copyText = context.getElementById("client_command");
+    var copyText = legacy_main_context.getElementById("client_command");
 
     copyText.select();
     copyText.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(copyText.value);
 }
 
-context.getElementById("install_command").value =
+legacy_main_context.getElementById("install_command").value =
     "wget run " + window.location.origin + "/computer/install.lua?token=" + CurrentAuthKey +
     "&host=" + window.location.origin +
     "&wshost=" + "ws://" + window.location.host;
     
-context.getElementById("client_command").value =
+legacy_main_context.getElementById("client_command").value =
     `node client ${(window.location.protocol == "https:" ? "wss:" : "ws:") + "//" + window.location.host} ${CurrentAuthKey}`;

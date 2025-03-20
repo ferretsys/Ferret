@@ -66,17 +66,6 @@ local function checkForNetworkEvents(event)
             });
             print("Refreshing source")
 
-            
-            for index, fileData in ipairs(data.files) do
-                if (fileData == "404") then
-                    SendRawToServer({
-                        type="computer_notify_state",
-                        state="missing_file_for_reboot"
-                    });
-                    return
-                end
-            end
-
             shell.run("rm /src/")
             shell.run("mkdir src")
             local startup = ""

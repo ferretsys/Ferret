@@ -38,7 +38,7 @@ function addTableListSelectCell(tableRow, values, defaultValue, onchange) {
 
         var valueBox = document.createElement("div");
         valueBox.classList.add("dropdown-button");
-        valueBox.addEventListener("click", ()=>{options.style.display = options.style.display == "none" ? null : "none"});
+        valueBox.addEventListener("click", () => {options.style.display = options.style.display == "none" ? null : "none"});
 
         var options = document.createElement("div");
         options.classList.add("selector-options");
@@ -54,7 +54,7 @@ function addTableListSelectCell(tableRow, values, defaultValue, onchange) {
                 defaultContent = content;
             }
             option.innerText = content;
-            option.addEventListener("click", ()=>{
+            option.addEventListener("click", () => {
                 valueBox.innerText = content;
                 onchange(value);
             });

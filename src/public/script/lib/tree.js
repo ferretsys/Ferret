@@ -26,7 +26,7 @@ function addSelectTreeNode(node, target, onchange) {
             if (entry.class) entryBox.classList.add(entry.class);
 
             entryBox.innerText = entry.text;
-            entryBox.addEventListener("click", ()=>{
+            entryBox.addEventListener("click", () => {
                 onchange(entry);
             });
     

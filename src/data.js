@@ -18,7 +18,6 @@ export function saveDataFile(src, data) {
     writeFileSync("./run/" + src, JSON.stringify(data, null, 2));
 }
 
-
 export var networks = readDataFile("networks.json");
 export var networkData = readDataFile("network_data.json");
 export var networkComputers = readDataFile("network_computers.json");
