@@ -11,7 +11,7 @@ export var serverStatistics = {
     connected_computers: 0
 };
 
-export function handleRequest(token, endpoint, body) {
+export async function handleRequest(token, endpoint, body) {
     var networkId = getNetworkForToken(token);
     if (endpoint == "get_data_for_computers_list") {
         return getComputersOfNetwork(networkId);
@@ -66,6 +66,20 @@ export function handleRequest(token, endpoint, body) {
         removeComputerFromNetwork(networkId, computerId)
         onNetworkComputersChaged(networkId);
         return {result: "Removed successfully", silent: true};
+    } else if (endpoint == "refresh_computer_source") {
+        var files = await getFilesFromSourceForComputer(networkId, body.computer_id);
+        networkComputers[networkId][body.computer_id].packageState = files == null ? "bad" : "ok";
+        if (files != null) {
+            sendToComputerSocket(networkId, body.computer_id, {
+                type: "action",
+                action: "refresh_computer_source",
+                files: files
+            });
+        }
+        var success = files != null;
+        return {
+            result: success ? "Updated successfully" : "Failed to update, missing files"
+        }
     }
 
     console.log("Unknown request endpoint", endpoint);

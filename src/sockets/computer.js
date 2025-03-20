@@ -1,4 +1,5 @@
-import { getNetworkForToken, updateConnectedComputers } from "../server.js";
+import { networkComputers } from "../data.js";
+import { getNetworkForToken, onNetworkComputersChaged, updateConnectedComputers } from "../server.js";
 import { computerConnections, webConnections } from "../sockets.js";
 
 class ComputerConnection {
@@ -8,7 +9,8 @@ class ComputerConnection {
         this.networkId = networkId;
         this.computerId = computerId;
 
-        this.lastNetworkTime = 0
+        this.lastNetworkTime = 0;
+        this.localFerretStateOrderstamp = 0; //Any measure of local time, just used to avoid overwriting a new state
     }
 
     updateLastNetworkTime() {
@@ -45,8 +47,19 @@ export function applyComputerSockets(app) {
         computerConnections.push(connection);
         connection.updateLastNetworkTime();
         updateConnectedComputers(networkId, computerConnections);
-        ws.on('message', function() {
+        ws.on('message', function(message) {
             connection.updateLastNetworkTime();
+            try {
+                message = JSON.parse(message);
+            } catch (error) {
+                console.log("Recived malformed computer message");
+            }
+            
+            if (message.type == "computer_notify_ferret_state" && parseInt(message.order) > connection.localFerretStateOrderstamp) {
+                networkComputers[networkId][computerId].ferretState = message.state
+                onNetworkComputersChaged(networkId);
+                connection.localFerretStateOrderstamp = parseInt(message.order)
+            }
         })
         ws.on('close', function () {
             console.log("Computer connection closed");

@@ -7,12 +7,12 @@ export var computerConnections = [];
 export var webConnections = [];
 export var clientSourceConnections = [];
 
-function handleWebSocketMessage(connection, data) {
+async function handleWebSocketMessage(connection, data) {
     if (data.type == "request") {
         connection.socket.send(JSON.stringify({
             type: "request_response",
             request_id: data.request_id,
-            response: handleRequest(connection.networkToken, data.endpoint, data.body)
+            response: await handleRequest(connection.networkToken, data.endpoint, data.body)
         }));
     } else if (data.type == "emit") {
         handleEmit(connection, connection.networkToken, data.endpoint, data.body)
@@ -28,7 +28,7 @@ async function handleClientSourceSocketMessage(connection, data) {
             if (source == connection.sourceId) {
                 reloadedCount++;
                 var files = await getFilesFromSourceForComputer(computerConnection.networkId, computerConnection.computerId);
-                networkComputers[computerConnection.computerId].packageState = files == null ? "bad" : "ok";
+                networkComputers[connection.networkId][computerConnection.computerId].packageState = files == null ? "bad" : "ok";
                 if (files != null) {
                     sendToComputerSocket(computerConnection.networkId, computerConnection.computerId, {
                         type: "action",
@@ -123,7 +123,6 @@ export async function getFileFromClientSourceForComputer(sourceId, filename) {
             connection.socket,
             filename
         ).then((response) => {
-            console.log(response);
             return response.result == "success" ? response.response : null
         }) : null
     ];
@@ -230,7 +229,7 @@ export function applySockets(app) {
             var data = JSON.parse(message);
             if (data.type == "request_response") {
                 if (requestPromises[data.request_id]) {
-                    requestPromises[data.request_id].resolve(data.response)
+                    requestPromises[data.request_id].resolve(data)
                     delete requestPromises[data.request_id]
                 } else {
                     console.log("Recived response for a request that didnt exist!");

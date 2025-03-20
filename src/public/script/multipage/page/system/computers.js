@@ -12,6 +12,10 @@ var table = new DataTable([
     new DataTableCell("Hb", (cell, data) => {
         return cell.heartbeatIndicator("computers", data.id);
     }),
+    new DataTableCell("Fe", (cell, data) => {
+        console.log(data.ferretState);
+        return cell.statusIndicator(data.ferretState || "none", data.ferretState);
+    }),
     new DataTableCell("Source", (cell, data) => {
         return cell.selectionList(["default", ...avaliableClientSources], data.source, (value) => {
             emitServerSocketApi("set_computer_source", {
@@ -30,15 +34,22 @@ var table = new DataTable([
             emitServerSocketApi("set_computer_package", {
                 computer_id: data.id,
                 package: value.value
-            });
+            })
         });
     }),
     new DataTableCell("Update", (cell, data) => {
         return cell.button("Update", () => {
-            emitServerSocketApi("refresh_computer_source", {
+            callServerSocketApi("refresh_computer_source", {
                 computer_id: data.id
+            }).then((response) => {
+                tippy("#refresh_computer_source_" + data.id, {
+                    content: response.result,
+                    trigger: "manual",
+                    delay: 500,
+                    theme: "light",
+                })[0].show();
             });
-        });
+        }, "refresh_computer_source_" + data.id);
     }),
     new DataTableCell("Remove", (cell, data) => {
         return cell.button("Remove", () => {

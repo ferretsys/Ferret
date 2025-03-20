@@ -16,10 +16,15 @@ class DataTableCell {
         return span;
     }
 
-    statusIndicator(statusName) {
+    statusIndicator(statusName, tooltip) {
         var indicator = document.createElement("div");
         indicator.classList.add("color-indicator-cell");
         indicator.style.backgroundColor = `var(--status-${statusName})`;
+        if (tooltip) {
+            tippy(indicator, {
+                content: tooltip,
+            });
+        }
         return indicator;
     }
 

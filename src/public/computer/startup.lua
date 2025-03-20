@@ -25,28 +25,40 @@ http.post(Host .. "/computer_startup", textutils.serializeJSON({
 }), { ["Content-Type"] = "text/plain"})
 
 require("websocket")
+SendRawToServer({
+    type="computer_notify_ferret_state",
+    state="startup"
+});
 
 local startup = ReadAllFile("startup.txt")
 
 local function RunStartupThread()
     if startup ~= "" then
-        local startupStatus = pcall(function ()
+        print("Sent running")
+        SendRawToServer({
+            type="computer_notify_ferret_state",
+            state="running",
+            order=1
+        });
+        local startupStatus, err = pcall(function ()
             require("src/" .. string.sub(startup, 1, string.len(startup) - 4))
         end)
 
         if not startupStatus then
-            print("Erorr in startup program")
+            print("Error in startup program", err)
             SendRawToServer({
-                type="computer_notify_state",
-                state="package_error"
+                type="computer_notify_ferret_state",
+                state="package_error",
+                order=2
             });
         end
     else
         term.setTextColor(colors.red);
         print("No startup specified")
         SendRawToServer({
-            type="computer_notify_state",
-            state="idle_no_startup"
+            type="computer_notify_ferret_state",
+            state="idle_no_startup",
+            order=3
         });
         term.setTextColor(colors.white);
     end

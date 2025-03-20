@@ -94,7 +94,7 @@ export async function getFileFromSourceForComputer(networkId, computerId, filena
             onNetworkComputersChaged(networkId);
             return await getFileFromSourceForComputer(networkId, computerId, filename);
         }
-        console.log("Client fetch successful, reverting to default")
+        console.log("Client fetch successful")
         return clientSourceResult;
     }
 }

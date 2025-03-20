@@ -49,7 +49,7 @@ function verifyDataIntegrity() {
             };
             changed = true;
         }
-    }
+    }    
     if (changed) {
         saveDataFile("network_computers.json", networkComputers);    
         saveDataFile("network_data.json", networkData);
