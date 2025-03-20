@@ -35,6 +35,7 @@ local function RunStartupThread()
         end)
 
         if not startupStatus then
+            print("Erorr in startup program")
             SendRawToServer({
                 type="computer_notify_state",
                 state="package_error"
