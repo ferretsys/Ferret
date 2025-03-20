@@ -46,11 +46,19 @@ local function RunStartupThread()
 
         if not startupStatus then
             print("Error in startup program", err)
-            SendRawToServer({
-                type="computer_notify_ferret_state",
-                state="package_error" .. err,
-                order=2
-            });
+            if (err == "Terminated") then
+                SendRawToServer({
+                    type="computer_notify_ferret_state",
+                    state="shutdown",
+                    order=2
+                });
+            else
+                SendRawToServer({
+                    type="computer_notify_ferret_state",
+                    state="package_error",
+                    order=2
+                });
+            end
         end
     else
         term.setTextColor(colors.red);
