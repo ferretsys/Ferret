@@ -200,11 +200,13 @@ export function applySockets(app) {
         var cookie = req.get("COOKIE");
         var networkToken = /authToken=([^;]+)/.exec(cookie)[1];
         var networkId = getNetworkForToken(networkToken);
+
         if (networkId == null) {
             ws.send("Invalid token")
             ws.close()
             return;
         }
+
         var sourceId = randomSourceCode();
         sourceCodesInUse[sourceId] = true;
         var connection = {
@@ -213,8 +215,9 @@ export function applySockets(app) {
             networkId: networkId,
             sourceId: sourceId
         };
+
         console.log("(With id", sourceId, ")");
-        ws.send("Your id is " + sourceId);//Tell client what the id is
+        ws.send("Your id is " + sourceId);//Note that the client has special formatting for this text (bad idea i know icba to fix rn)
 
         clientSourceConnections.push(connection);
         notifyWebOfNewClientSourceData(networkId, clientSourceConnections);
@@ -232,6 +235,7 @@ export function applySockets(app) {
                 handleClientSourceSocketMessage(connection, data); 
             }
         });
+        
         ws.on('close', function () {
             console.log("Client connection closed");
             clientSourceConnections.splice(clientSourceConnections.indexOf(ws), 1);

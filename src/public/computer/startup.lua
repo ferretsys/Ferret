@@ -30,9 +30,24 @@ local startup = ReadAllFile("startup.txt")
 
 local function RunStartupThread()
     if startup ~= "" then
-        require("src/" .. string.sub(startup, 1, string.len(startup) - 4))
+        local startupStatus = pcall(function ()
+            require("src/" .. string.sub(startup, 1, string.len(startup) - 4))
+        end)
+
+        if not startupStatus then
+            SendRawToServer({
+                type="computer_notify_state",
+                state="package_error"
+            });
+        end
     else
+        term.setTextColor(colors.red);
         print("No startup specified")
+        SendRawToServer({
+            type="computer_notify_state",
+            state="idle_no_startup"
+        });
+        term.setTextColor(colors.white);
     end
 end
 

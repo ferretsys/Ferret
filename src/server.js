@@ -75,8 +75,9 @@ export function getSourceOfComputer(networkId, computerId) {
 }
 
 export async function getFileFromSourceForComputer(networkId, computerId, filename) {
-        console.log("Fetching file", networkId, computerId, filename);
-        var sourceId = networkComputers[networkId][computerId].source;
+    //TODO add the actual handling
+    console.log("Fetching file", networkId, computerId, filename);
+    var sourceId = networkComputers[networkId][computerId].source;
     if (sourceId == "default") {
         var defaultSource = networkData[networkId].default_source;
         if (defaultSource.type != "github") {
@@ -106,7 +107,7 @@ export async function getFilesFromSourceForComputer(networkId, computerId) {
     for (var filename of packaged.files) {
         fileData.push({
             name: filename,
-            content: await getFileFromSourceForComputer(networkId, computerId, filename),
+            content: await getFileFromSourceForComputer(networkId, computerId, filename) || "404",
         })
     }
     return fileData;
