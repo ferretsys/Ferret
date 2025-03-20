@@ -54,7 +54,7 @@ export function applyComputerSockets(app) {
             } catch (error) {
                 console.log("Recived malformed computer message");
             }
-            
+
             if (message.type == "computer_notify_ferret_state" && parseInt(message.order) > connection.localFerretStateOrderstamp) {
                 networkComputers[networkId][computerId].ferretState = message.state
                 onNetworkComputersChaged(networkId);
@@ -62,6 +62,8 @@ export function applyComputerSockets(app) {
             }
         })
         ws.on('close', function () {
+            networkComputers[networkId][computerId].ferretState = "shutdown"
+            
             console.log("Computer connection closed");
             computerConnections.splice(computerConnections.indexOf(ws), 1);
             updateConnectedComputers(networkId, computerConnections);
