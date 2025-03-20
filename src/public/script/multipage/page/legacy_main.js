@@ -208,7 +208,18 @@ function copyInstallCommand() {
     navigator.clipboard.writeText(copyText.value);
 }
 
+function copyClientCommand() {
+    var copyText = context.getElementById("client_command");
+
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value);
+}
+
 context.getElementById("install_command").value =
     "wget run " + window.location.origin + "/computer/install.lua?token=" + CurrentAuthKey +
     "&host=" + window.location.origin +
     "&wshost=" + "ws://" + window.location.host;
+    
+context.getElementById("client_command").value =
+    `node client ${(window.location.protocol == "https:" ? "wss:" : "ws:") + "//" + window.location.host} ${CurrentAuthKey}`;
