@@ -1,9 +1,9 @@
 :root {
-    --button-color: rgb(25, 25, 29);
+    --button-color: #42424b;
 
-    --body-bg1: rgb(19, 19, 26);
-    --body-bg2: rgb(26, 26, 29);
-    --body-bg3: rgb(5, 5, 7);
+    --body-bg1: #212124;
+    --body-bg2: #28282c;
+    --body-bg3: #33333e;
 
     --text-col1: rgb(236, 236, 238);
     --text-col2: rgb(202, 202, 210);

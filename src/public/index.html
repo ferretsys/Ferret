@@ -1,8 +1,8 @@
 <html>
     <head>
         <link rel="stylesheet" href="style/base.css"/>
+        <link rel="stylesheet" href="style/base-tables.css"/>
         <link rel="stylesheet" href="style/index.css"/>
-        <link rel="stylesheet" href="theme/dark.css"/>
         <title>Ferret</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,56 +31,23 @@
         </header>
 
         <content>
-            <h2>Computers</h2>
-            <div class="indented-container">
-                <table id="computers_list">
-                </table>
-            </div>
-    
-            <h2>Packages</h2>
-            <div class="indented-container">
-                <table id="packages_list">
-                </table>
-                <table id="add_package">
-                    <tr>
-                        <td>Name: <input id="add_package_name" autocomplete="one-time-code"/></td>
-                        <td>Files (csv): <input id="add_package_files" autocomplete="one-time-code"/></td>
-                        <td><button id="add_package_button" onclick="submitNewPackage()">Add</button></td>
-                    </tr>
-                </table>
-            </div>
-    
-            <h2>Install Script</h2>
-            <input id="install_command" readonly autocomplete="one-time-code"></input>
-            <button onclick="copyInstallCommand()">
-                Copy
-            </button>
-    
-            <p>
-                TODO:
-                --save data to file--
-                --local source--
-                --package creation and deletion--
-    
-                optimise: send data to client either as a single thing or push data
-    
-                add toasts and better handling for partial network definitions 
-                
-                prettier style
-                better toast types
-    
-                abstract graph and io to server in panel management
-                check abs filepath in client
-                fix task not logging
-            </p>
+            <div id = "page_navigator"></div>
+            <div id = "page_content"></div>
         </content>
 
         <script src="https://unpkg.com/@popperjs/core@2"></script>
         <script src="https://unpkg.com/tippy.js@6"></script>
 
+        <script src="script/base.js"></script>
+        <script src="script/theme.js"></script>
         <script src="script/auth.js"></script>
         <script src="script/api_socket.js"></script>
+
         <script src="script/lib/table.js"></script>
+
+        <script src="script/multipage/pages.js"></script>
+        <script src="script/multipage/page.js"></script>
+
         <script src="script/page/index.js"></script>
     </body>
 </html>
