@@ -13,8 +13,8 @@
   --status-ok: rgb(96, 226, 84);
   --status-error: rgb(226, 84, 84);
 
-  --indent-border: rgba(0.5, 0.5, 0.5, 0.05);
-  --soft-border: rgba(0.5, 0.5, 0.5, 0.5);
+  --hard-border: rgba(0, 0, 0, 0.5);
+  --soft-border: rgba(0, 0, 0, 0.025);
 }
 
 * {
@@ -40,7 +40,7 @@ td, th {
 
 input {
   border-radius: 0;
-  border: 2px solid var(--indent-border);
+  border: 2px solid var(--soft-border);
   font-family: unset;
   padding: 5px;
   outline: 0;
@@ -60,7 +60,7 @@ a, button, input {
 }
 
 button, input {
-  border: 2px solid var(--soft-border);
+  border: 2px solid var(--hard-border);
 }
 
 h1, h2, h3, h4, h5, h6 {

@@ -17,7 +17,7 @@ class ScriptContext {
 var renderedPages = {};
 var pageContainer = document.getElementById("page_content");
 
-var currentPage = null;
+var currentPageElement = null;
 setCurrentPage(Pages[0]);
 
 var currentLoadContext = null; //Used to transfer the element to the script being run
@@ -30,10 +30,11 @@ async function setCurrentPage(page) {
     console.log("Loading page", page);
     if (typeof(page) != "string") throw "Set the current page to a non string value!";
 
+    if (currentPageElement) {
+        currentPageElement.remove();
+    }
+
     if (renderedPages[page]) {
-        if (currentPage) {
-            currentPage.element.remove();
-        }
         pageContainer.appendChild(renderedPages[page].element);
     } else {
         var element = document.createElement("div");
@@ -52,5 +53,21 @@ async function setCurrentPage(page) {
 
         pageContainer.appendChild(element);
     }
+    currentPageElement = renderedPages[page].element;
     console.log("Loaded page");
 }
+
+function loadPageTree() {
+    var startNode = convertUngroupedNamesToTree(Pages);
+    
+    var options = document.createElement("div");
+    options.classList.add("page-selector-options");
+
+    addSelectTreeNode(startNode, options, (value) => {
+        setCurrentPage(value.value);
+    });
+
+    document.getElementById("page_navigator").appendChild(options);
+}
+
+loadPageTree();

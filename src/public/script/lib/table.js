@@ -41,13 +41,13 @@ function addTableListSelectCell(tableRow, values, defaultValue, onchange) {
         valueBox.addEventListener("click", ()=>{options.style.display = options.style.display == "none" ? null : "none"});
 
         var options = document.createElement("div");
-        options.classList.add("dropdown-selector-options");
+        options.classList.add("selector-options");
         options.style.display = "none";
 
         var defaultContent = null;
         for (const value of values) {
             var option = document.createElement("div");
-            option.classList.add("dropdown-selector-option");
+            option.classList.add("selector-option");
             if (value.class) option.classList.add(value.class);
             const content = value.text || value;
             if (content == defaultValue) {
@@ -68,43 +68,6 @@ function addTableListSelectCell(tableRow, values, defaultValue, onchange) {
     });
 }
 
-function addTableListSelectNode(node, target, valueBox, onchange) {
-    if (node.name) {
-        var nodeLabel = document.createElement("div");
-        nodeLabel.classList.add("dropdown-selector-tree-label");
-        nodeLabel.innerText = node.name;
-        target.appendChild(nodeLabel);
-
-        var nodeBox = document.createElement("div");
-        nodeBox.classList.add("dropdown-selector-tree");
-        target.appendChild(nodeBox);
-        target = nodeBox;
-    }
-
-    if (node.children) {
-        for (var child of Object.values(node.children)) {
-            addTableListSelectNode(child, target, valueBox, onchange);
-        }
-    }
-
-    if (node.entries) {
-        for (const entry of node.entries) {
-            var entryBox = document.createElement("div");
-
-            entryBox.classList.add("dropdown-selector-option");
-            if (entry.class) entryBox.classList.add(entry.class);
-
-            entryBox.innerText = entry.text;
-            entryBox.addEventListener("click", ()=>{
-                valueBox.innerText = entry.value;
-                onchange(entry.value);
-            });
-    
-            target.appendChild(entryBox);
-        }
-    }
-}
-
 function addTableTreeSelectCell(tableRow, startNode, defaultValue, onchange) {
     addTableCell(tableRow, ()=> {
         var selectionContainer = document.createElement("div")
@@ -117,10 +80,13 @@ function addTableTreeSelectCell(tableRow, startNode, defaultValue, onchange) {
         });
 
         var options = document.createElement("div");
-        options.classList.add("dropdown-selector-options");
+        options.classList.add("selector-options");
         options.style.display = "none";
 
-        addTableListSelectNode(startNode, options, valueBox, onchange);
+        addSelectTreeNode(startNode, options, (value) => {
+            valueBox.innerText = value.text;
+            onchange(value);
+        });
 
         valueBox.innerText = defaultValue;
         selectionContainer.appendChild(valueBox);

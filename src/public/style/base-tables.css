@@ -14,14 +14,14 @@
 }
 
 
-.dropdown-selector-options {
+.tree-selector-options, .selector-options {
   position: absolute;
   background-color: var(--body-bg2);
   padding: 0 10px;
   border: 2px var(--button-color) solid;
 }
 
-.dropdown-selector-option {
+.tree-selector-option, .selector-option {
   display: block;
   background-color: var(--body-bg1);
   border: 2px var(--button-color) solid;
@@ -30,18 +30,18 @@
   box-sizing: border-box;
 }
 
-.dropdown-selector-option:hover {
+.tree-selector-option:hover, .selector-option:hover {
   background-color: var(--body-bg1);
   border: 2px var(--text-col4) solid;
 }
 
-.dropdown-selector-tree {
+.tree-selector-group {
   margin-left: 5px;
-  border-left: 2px var(--indent-border) solid;
+  border-left: 2px var(--soft-border) solid;
   padding-left: 10px;
   min-width: 200px;
 }
 
-.dropdown-selector-tree-label {
+.tree-selector-group-label {
   padding: 5px;
 }

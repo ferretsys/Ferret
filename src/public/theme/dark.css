@@ -13,7 +13,6 @@
     --status-ok: rgb(45, 192, 31);
     --status-error: rgb(192, 36, 31);
 
-    --indent-border: rgba(255, 255, 255, 0.75);
-    --soft-border: rgba(255, 255, 255, 0.5);
-    --hard-border: rgba(255, 255, 255, 0.75);
+    --soft-border: rgba(255, 255, 255, 0.25);
+    --hard-border: rgba(255, 255, 255, 0.5);
 }

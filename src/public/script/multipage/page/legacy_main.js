@@ -41,7 +41,7 @@ function handleComputerListDataUpdate(data) {
         addTableTreeSelectCell(tableRow, packageDropdownOptions, computer.package || "No package", (value)=>{
             emitServerSocketApi("set_computer_package", {
                 computer_id: computerId,
-                package: value
+                package: value.value
             });
         })
 
@@ -85,7 +85,6 @@ function convertPackageNamesToTree(packageNames) {
         walkAdd(baseNode, packageDirectory, entry);
     }
 
-    // console.log(baseNode);
     return baseNode;
 }
 
