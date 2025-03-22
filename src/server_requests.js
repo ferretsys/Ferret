@@ -1,6 +1,6 @@
-import { networkComputers } from "./data.js";
-import { addPackageToNetwork, getComputersOfNetwork, getFilesFromSourceForComputer, getNetworkForToken, getPackagesOfNetwork, onNetworkComputersChaged, onNetworkDataChaged, removeComputerFromNetwork, removePackageFromNetwork, setPackageOfComputer, setSourceOfComputer } from "./server.js";
-import { getClientSourcesOfNetwork, notifyWebOfNewPackageData, sendToComputerSocket } from "./sockets.js";
+import { SYNCED_COMPUTERS, SYNCED_CONFIG } from "./data.js";
+import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./server.js";
+import { sendToComputerSocket } from "./sockets.js";
 import { existsSync, readFileSync } from "fs";
 
 var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt").toString() : "UNKNOWN";
@@ -13,19 +13,20 @@ export var serverStatistics = {
 
 export async function handleRequest(token, endpoint, body) {
     var networkId = getNetworkForToken(token);
+    var net = getSyncedNetwork(token);
     if (endpoint == "get_data_for_computers_list") {
-        return getComputersOfNetwork(networkId);
+        return {};
     } else if (endpoint == "get_data_for_packages_list") {
-        return getPackagesOfNetwork(networkId);
+        return {};
     } else if (endpoint == "get_data_for_client_sources_list") {
-        return getClientSourcesOfNetwork(networkId);
+        return {};
     } else if (endpoint == "get_server_infos") {
         return {
             network_id: networkId,
             stats: serverStatistics
         }
     } else if (endpoint == "add_new_package") {
-        var packages = getPackagesOfNetwork(networkId);
+        var packages = net.packages;
 
         var name = body.name;
         var files = body.files;
@@ -34,10 +35,10 @@ export async function handleRequest(token, endpoint, body) {
 
         if (packages[name]) return {result: "Package with name already exists!"};
 
-        addPackageToNetwork(networkId, name, {
+        net.config.packages[name] = {
             files: files.split(",")
-        })
-        onNetworkDataChaged(networkId);
+        };
+        net.setChanged(SYNCED_CONFIG);
         return {result: "Added successfully", silent: true, clear: true};
     } else if (endpoint == "remove_package") {
         var name = body.name;
@@ -52,8 +53,8 @@ export async function handleRequest(token, endpoint, body) {
             }
         }
 
-        removePackageFromNetwork(networkId, name)
-        onNetworkDataChaged(networkId);
+        delete net.config.packages[name];
+        net.setChanged(SYNCED_CONFIG);
         return {result: "Removed successfully", silent: true};
     } else if (endpoint == "remove_computer") {
         var computerId = body.computer_id;
@@ -63,12 +64,12 @@ export async function handleRequest(token, endpoint, body) {
 
         if (computers[computerId].connectedState) return {result: "Computer must be disconnected!"};
 
-        removeComputerFromNetwork(networkId, computerId)
-        onNetworkComputersChaged(networkId);
+        delete net.computers[computerId];
+        net.setChanged(SYNCED_COMPUTERS);
         return {result: "Removed successfully", silent: true};
     } else if (endpoint == "refresh_computer_source") {
         var files = await getFilesFromSourceForComputer(networkId, body.computer_id);
-        networkComputers[networkId][body.computer_id].packageState = files == null ? "bad" : "ok";
+        net.computer[body.computer_id].packageState = files == null ? "bad" : "ok";
         if (files != null) {
             sendToComputerSocket(networkId, body.computer_id, {
                 type: "action",
@@ -90,12 +91,13 @@ export async function handleRequest(token, endpoint, body) {
 
 export async function handleEmit(connection, token, endpoint, body) {
     var networkId = getNetworkForToken(token);
+    var net = getSyncedNetwork(token);
     if (endpoint == "needs_data_for_table_content") {
         if (body.source == "computers") {
             connection.socket.send(JSON.stringify({
                 type: "data_table_content",
                 source: "computers",
-                content: getComputersOfNetwork(networkId)
+                content: net.computers
             }));
         } else {
             console.log("Unknown source for table prefetch", body.source)
@@ -104,7 +106,7 @@ export async function handleEmit(connection, token, endpoint, body) {
     }
     if (endpoint == "refresh_computer_source") {
         var files = await getFilesFromSourceForComputer(networkId, body.computer_id);
-        networkComputers[networkId][body.computer_id].packageState = files == null ? "bad" : "ok";
+        net.computers[body.computer_id].packageState = files == null ? "bad" : "ok";
         if (files != null) {
             sendToComputerSocket(networkId, body.computer_id, {
                 type: "action",
@@ -115,11 +117,13 @@ export async function handleEmit(connection, token, endpoint, body) {
         return;
     }
     if (endpoint == "set_computer_package") {
-        setPackageOfComputer(networkId, body.computer_id, body.package)
+        net.computers[body.computer_id].package = body.package;
+        net.setChanged(SYNCED_CONFIG);
         return;
     }
     if (endpoint == "set_computer_source") {
-        setSourceOfComputer(networkId, body.computer_id, body.source)
+        net.computers[body.computer_id].source = body.source;
+        net.setChanged(SYNCED_COMPUTERS);
         return;
     }
     console.log("Unknown emit endpoint", endpoint);

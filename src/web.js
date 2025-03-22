@@ -3,7 +3,7 @@ import express from "express";
 import expressWs from "express-ws";
 import path from "path";
 import { fileURLToPath } from "url";
-import { addComputerToServer, getNetworkForToken } from "./server.js";
+import { addComputerToServer, getNetworkForToken, getSyncedNetwork } from "./server.js";
 import { applySockets } from "./sockets.js";
 import { existsSync, readFileSync } from "fs";
 
@@ -35,7 +35,7 @@ app.get('/computer/install.lua', function (req, res) {
 
 app.post('/computer_startup', function (req, res) {
     var data = JSON.parse(req.body);
-    addComputerToServer(getNetworkForToken(data.token), data.computer_id)
+    addComputerToServer(getSyncedNetwork(data.token), data.computer_id)
     res.end()
 });
 

@@ -1,4 +1,36 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { webConnections } from "./sockets.js";
+
+export var syncedNetworkData = {};
+
+export const SYNCED_CONFIG = "data";
+export const SYNCED_COMPUTERS = "computers";
+
+class SyncedNetworkData {
+    constructor(networkConfig, computerData, networkId) {
+        this.config = networkConfig;
+        this.computers = computerData;
+        this.networkId = networkId;
+    }
+
+    setChanged(group) {
+        networkConfigFile[this.networkId] = this.config;
+        networkComputersFile[this.networkId] = this.computers;
+
+        for (var connection in webConnections) {
+            if (connection.networkId == this.networkId) {
+                var dataToSend = {};
+                dataToSend[group] = this[group];
+                connection.socket.send({
+                    type: "synced_network_data_change",
+                    content: dataToSend
+                });
+            }
+        }
+
+        saveDataFiles();
+    }
+}
 
 export function readDataFile(src) {
     if (existsSync("./run/" + src)) {
@@ -18,23 +50,31 @@ export function saveDataFile(src, data) {
     writeFileSync("./run/" + src, JSON.stringify(data, null, 2));
 }
 
-export var networks = readDataFile("networks.json");
-export var networkData = readDataFile("network_data.json");
-export var networkComputers = readDataFile("network_computers.json");
+export var networkTokens = readDataFile("networks.json");
+var networkConfigFile = readDataFile("network_data.json");
+var networkComputersFile = readDataFile("network_computers.json");
 
-verifyDataIntegrity();
-for (var networkId of Object.keys(networks)) {
-    for (var networkComputer in networkComputers[networkId]) {
-        networkComputers[networkId][networkComputer].connectedState = false;
+verifyNetworkIntegrity();
+for (var networkId of Object.keys(networkTokens)) {
+    for (var networkComputer in networkComputersFile[networkId]) {
+        networkComputersFile[networkId][networkComputer].connectedState = false;
+        networkComputersFile[networkId][networkComputer].ferretState = null;
+    }
+}
+createNetworksForFileData();
+
+function createNetworksForFileData() {
+    for (var networkId of Object.keys(networkTokens)) {
+        syncedNetworkData[networkId] = new SyncedNetworkData(networkConfigFile[networkId], networkComputersFile[networkId], networkId);
     }
 }
 
-function verifyDataIntegrity() {
+function verifyNetworkIntegrity() {
     var changed = false;
-    for (var networkId in networks) {
-        if (!networkData[networkId]) {
+    for (var networkId in networkTokens) {
+        if (!networkConfigFile[networkId]) {
             console.log("Network was partially missing! Adding data entry, however git will default to testing");
-            networkData[networkId] = {
+            networkConfigFile[networkId] = {
                 default_source: {
                     type: "github",
                     url: "https://raw.githubusercontent.com/ferretsys/TestNetSource/refs/heads/main/"
@@ -43,15 +83,20 @@ function verifyDataIntegrity() {
             };
             changed = true;
         }
-        if (!networkComputers[networkId]) {
+        if (!networkComputersFile[networkId]) {
             console.log("Network was partially missing! Adding computers entry");
-            networkComputers[networkId] = {
+            networkComputersFile[networkId] = {
             };
             changed = true;
         }
     }    
     if (changed) {
-        saveDataFile("network_computers.json", networkComputers);    
-        saveDataFile("network_data.json", networkData);
+        saveDataFile("network_computers.json", networkComputersFile);    
+        saveDataFile("network_data.json", networkConfigFile);
     }
+}
+
+function saveDataFiles() {
+    saveDataFile("network_computers.json", networkComputersFile);    
+    saveDataFile("network_data.json", networkConfigFile);
 }

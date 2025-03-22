@@ -1,30 +1,21 @@
-import {} from "./web.js";
-import { networkComputers, networkData, networks, saveDataFile } from "./data.js";
+import {} from "./web.js";//Load
+import { networkTokens, SYNCED_COMPUTERS, SYNCED_CONFIG, syncedNetworkData } from "./data.js";
 import { getFileFromClientSourceForComputer, notifyWebOfNewComputerData, notifyWebOfNewPackageData } from "./sockets.js";
 import { serverStatistics } from "./server_requests.js";
 
-export function onNetworkDataChaged(networkId) {
-    saveDataFile("network_data.json", networkData);
-    notifyWebOfNewPackageData(networkId)
-}
-
-export function onNetworkComputersChaged(networkId) {
-    saveDataFile("network_computers.json", networkComputers);
-    notifyWebOfNewComputerData(networkId)
-}
 var networkByToken = {};
-for (var id in networks) {
-    networkByToken[networks[id].token] = id;
+for (var id in networkTokens) {
+    networkByToken[networkTokens[id].token] = id;
 }
 
-export function addComputerToServer(networkId, computerId) {
-    if (!networkComputers[networkId][computerId]) {
-        networkComputers[networkId][computerId] = {
+export function addComputerToServer(net, computerId) {
+    if (!net.computers[computerId]) {
+        net.computers[computerId] = {
             id: computerId,
             source: "default",
             package: null,
         };
-        onNetworkComputersChaged(networkId);
+        net.setChanged(SYNCED_COMPUTERS);
     }
 }
 
@@ -32,53 +23,24 @@ export function getNetworkForToken(token) {
     return networkByToken[token];
 }
 
-export function getComputersOfNetwork(networkId) {
-    return networkComputers[networkId];
+export function getSyncedNetwork(tokenOrId) {
+    return syncedNetworkData[tokenOrId]  || syncedNetworkData[getNetworkForToken(tokenOrId) || console.log("Unable to resolve network for " + tokenOrId) || ""];
 }
 
-export function getPackagesOfNetwork(networkId) {
-    return networkData[networkId].packages;
-}
-
-export function addPackageToNetwork(networkId, packageId, packageData) {
-    networkData[networkId].packages[packageId] = packageData;
-}
-
-export function removePackageFromNetwork(networkId, packageId) {
-    delete networkData[networkId].packages[packageId];
-}
-export function removeComputerFromNetwork(networkId, computerId) {
-    delete networkComputers[networkId][computerId];
-}
-
-export function getPackageOfComputer(networkId, computerId) {
-    var computerPackage = networkComputers[networkId][computerId].package;
+export function getPackageOfComputer(net, computerId) {
+    var computerPackage = net.computers[computerId].package;
     if (!computerPackage) {
         return null;
     } else {
-        return networkData[networkId].packages[computerPackage];
+        return net.data[networkId].packages[computerPackage];
     }
 }
 
-export function setPackageOfComputer(networkId, computerId, packageId) {
-    networkComputers[networkId][computerId].package = packageId;
-    onNetworkComputersChaged(networkId);
-}
-
-export function setSourceOfComputer(networkId, computerId, sourceId) {
-    networkComputers[networkId][computerId].source = sourceId;
-    onNetworkComputersChaged(networkId);
-}
-
-export function getSourceOfComputer(networkId, computerId) {
-    return networkComputers[networkId][computerId].source
-}
-
-export async function getFileFromSourceForComputer(networkId, computerId, filename) {
-    console.log("Fetching file", networkId, computerId, filename);
-    var sourceId = networkComputers[networkId][computerId].source;
+export async function getFileFromSourceForComputer(net, computerId, filename) {
+    console.log("Fetching file", net.networkId, computerId, filename);
+    var sourceId = net.computers[computerId].source;
     if (sourceId == "default") {
-        var defaultSource = networkData[networkId].default_source;
+        var defaultSource = net.config[networkId].default_source;
         if (defaultSource.type != "github") {
             throw "Unknown code source type  " + defaultSource.type;
         }
@@ -90,24 +52,24 @@ export async function getFileFromSourceForComputer(networkId, computerId, filena
         var [connectionPresent, clientSourceResult] = await getFileFromClientSourceForComputer(sourceId, filename);
         if (!connectionPresent) {
             console.log("Client fetch failed - missing connection");
-            networkComputers[networkId][computerId].source = "default";
-            onNetworkComputersChaged(networkId);
-            return await getFileFromSourceForComputer(networkId, computerId, filename);
+            net.computers[computerId].source = "default";
+            net.setChanged();
+            return await getFileFromSourceForComputer(net, computerId, filename);
         }
         console.log("Client fetch successful")
         return clientSourceResult;
     }
 }
 
-export async function getFilesFromSourceForComputer(networkId, computerId) {
-    var packaged = getPackageOfComputer(networkId, computerId);
+export async function getFilesFromSourceForComputer(net, computerId) {
+    var packaged = getPackageOfComputer(net, computerId);
     if (packaged == null) return [];
     
     var fileData = []
     for (var filename of packaged.files) {
-        var content = await getFileFromSourceForComputer(networkId, computerId, filename);
+        var content = await getFileFromSourceForComputer(net, computerId, filename);
         if (content == null) {       
-            console.log("Failed to fetch files from source", networkId, computerId, filename);
+            console.log("Failed to fetch files from source", net.networkId, computerId, filename);
             return null;
         }
         fileData.push({
@@ -118,16 +80,16 @@ export async function getFilesFromSourceForComputer(networkId, computerId) {
     return fileData;
 }
 
-export function updateConnectedComputers(networkId, computerConnections) {
+export function updateConnectedComputers(net, computerConnections) {
     var connectedComputers = {};
     var count = 0;
     for (var connection of computerConnections) {
         connectedComputers[connection.computerId] = true;
         count++;
     }
-    for (var computerid in networkComputers[networkId]) {
-        networkComputers[networkId][computerid].connectedState = connectedComputers[computerid] != undefined;
+    for (var computerid in net.computers) {
+        net.computers[computerid].connectedState = connectedComputers[computerid] != undefined;
     }
     serverStatistics.connected_computers = count;
-    onNetworkComputersChaged(networkId);
+    net.setChanged(SYNCED_COMPUTERS);
 }
