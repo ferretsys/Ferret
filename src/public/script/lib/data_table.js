@@ -6,8 +6,8 @@ class DataTableCell {
         this.builder = builder;
     }
 
-    createElementForNewData(data) {
-        return this.builder(this, data);
+    createElementForNewData(entry, data) {
+        return this.builder(this, entry, data);
     }
 
     textLabel(content) {
@@ -111,16 +111,18 @@ class DataTableCell {
 }
 
 class DataTable {
-    constructor(fields, source) {
+    constructor(fields, sources, entriesSource) {
         this.fields = fields;
-        this.source = source;
+        this.sources = sources;
+        this.entriesSource = entriesSource;
         this.element = document.createElement("div");
         this._innerElement = document.createElement("table");
         this.element.appendChild(this._innerElement);
+        this.content = {};
         activeDataTables.push(this);
     }
 
-    updateForContent(newContent) {
+    update() {
         var newInner = document.createElement("table");
 
         var headerRow = document.createElement("tr");
@@ -131,13 +133,13 @@ class DataTable {
         }
         newInner.appendChild(headerRow);
 
-        for (var key in newContent) {
-            var entry = newContent[key]
+        for (var key in this.content[this.entriesSource]) {
+            var entry = this.content[this.entriesSource][key]
             var newRow = document.createElement("tr");
 
             for (var field of this.fields) {
                 var newCell = document.createElement("td");
-                newCell.appendChild(field.createElementForNewData(entry));
+                newCell.appendChild(field.createElementForNewData(entry, this.content));
                 newRow.appendChild(newCell);
             }
 
@@ -149,7 +151,7 @@ class DataTable {
     }
 
     build() {
-        emitServerSocketApi("needs_data_for_table_content", { source: this.source });
+        emitServerSocketApi("needs_data_for_table_content", { sources: this.sources });
     }
 
     unbind() {
@@ -157,14 +159,16 @@ class DataTable {
     }
 }
 
-setServerSocketMessageTypeHanlder("data_table_content", (data) => {
+setServerSocketMessageTypeHandler("data_table_content", (data) => {
     console.log("Recived data table content", data);
+
     var dataSourceTarget = data.source;
     var dataContent = data.content;
     
     for (var activeDataTable of activeDataTables) {
-        if (activeDataTable.source == dataSourceTarget) {
-            activeDataTable.updateForContent(dataContent);
+        if (activeDataTable.sources.indexOf(dataSourceTarget) != -1) {
+            activeDataTable.content[dataSourceTarget] = dataContent;
+            activeDataTable.update();
         }
     }
 });
@@ -179,10 +183,12 @@ function animateHeartbeat(element) {
       ], { duration: 2000, iterations: 1 });
 }
 
-setServerSocketMessageTypeHanlder("heartbeat_tick", (data) => {
+setServerSocketMessageTypeHandler("heartbeat_tick", (data) => {
     console.log("Recived data heartbeat content", data);
     heartbeats["heartbeat-" + data.group + "-" + data.id] = Date.now();
     for (var element of document.getElementsByClassName("heartbeat-" + data.group + "-" + data.id)) {
         animateHeartbeat(element);
     }
 });
+
+// emitServerSocketApi("needs_data_for_all_table_content");

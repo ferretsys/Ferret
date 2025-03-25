@@ -3,60 +3,59 @@ var computers_context = getCurrentLoadContext();
 //TODO remove implicit dependency on legacy main for avaliable client sources and avaliable client packages
 
 var table = new DataTable([
-    new DataTableCell("Id", (cell, data) => {
-        return cell.textLabel(data.id);
+    new DataTableCell("Id", (cell, entry, data) => {
+        return cell.textLabel(entry.id);
     }),
-    new DataTableCell("Cn", (cell, data) => {
-        return cell.statusIndicator(data.connectedState ? "ok" : "none");
+    new DataTableCell("Cn", (cell, entry, data) => {
+        return cell.statusIndicator(entry.connectedState ? "ok" : "none");
     }),
-    new DataTableCell("Hb", (cell, data) => {
-        return cell.heartbeatIndicator("computers", data.id);
+    new DataTableCell("Hb", (cell, entry, data) => {
+        return cell.heartbeatIndicator("computers", entry.id);
     }),
-    new DataTableCell("Fe", (cell, data) => {
-        console.log(data.ferretState);
-        return cell.statusIndicator(data.ferretState || "none", data.ferretState);
+    new DataTableCell("Fe", (cell, entry, data) => {
+        return cell.statusIndicator(entry.ferretState || "none", entry.ferretState);
     }),
-    new DataTableCell("Source", (cell, data) => {
-        return cell.selectionList(["default", ...avaliableClientSources], data.source, (value) => {
+    new DataTableCell("Source", (cell, entry, data) => {
+        return cell.selectionList(["default", ...(data.sources || [])], entry.source, (value) => {
             emitServerSocketApi("set_computer_source", {
-                computer_id: data.id,
+                computer_id: entry.id,
                 source: value
             });
         });
     }),
-    new DataTableCell("Package", (cell, data) => {
-        var packageDropdownOptions = convertPackageNamesToTree((Object.keys(avaliablePackages)));
+    new DataTableCell("Package", (cell, entry, data) => {
+        var packageDropdownOptions = convertPackageNamesToTree(Object.keys(data.packages || {}));
 
         packageDropdownOptions.entries = packageDropdownOptions.entries || [];
         packageDropdownOptions.entries.push({value: null, text: "No package", class: "dropdown-option-no-package"});
 
-        return cell.selectionTree(packageDropdownOptions, data.package || "No package", (value) => {
+        return cell.selectionTree(packageDropdownOptions, entry.package || "No package", (value) => {
             emitServerSocketApi("set_computer_package", {
-                computer_id: data.id,
+                computer_id: entry.id,
                 package: value.value
             })
         });
     }),
-    new DataTableCell("Update", (cell, data) => {
+    new DataTableCell("Update", (cell, entry, data) => {
         return cell.button("Update", () => {
             callServerSocketApi("refresh_computer_source", {
-                computer_id: data.id
+                computer_id: entry.id
             }).then((response) => {
-                tippy("#refresh_computer_source_" + data.id, {
+                tippy("#refresh_computer_source_" + entry.id, {
                     content: response.result,
                     trigger: "manual",
                     delay: 500,
                     theme: "light",
                 })[0].show();
             });
-        }, "refresh_computer_source_" + data.id);
+        }, "refresh_computer_source_" + entry.id);
     }),
-    new DataTableCell("Remove", (cell, data) => {
+    new DataTableCell("Remove", (cell, entry, data) => {
         return cell.button("Remove", () => {
-            tryRemoveComputer(data.id)
-        }, "remove_computer_button_" + data.id);
+            tryRemoveComputer(entry.id)
+        }, "remove_computer_button_" + entry.id);
     }),
-], "computers");
+], ["computers", "packages", "sources"], "computers");
 
 table.build();
 

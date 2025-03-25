@@ -32,7 +32,7 @@ export function getPackageOfComputer(net, computerId) {
     if (!computerPackage) {
         return null;
     } else {
-        return net.data[networkId].packages[computerPackage];
+        return net.config.packages[computerPackage];
     }
 }
 
@@ -40,7 +40,7 @@ export async function getFileFromSourceForComputer(net, computerId, filename) {
     console.log("Fetching file", net.networkId, computerId, filename);
     var sourceId = net.computers[computerId].source;
     if (sourceId == "default") {
-        var defaultSource = net.config[networkId].default_source;
+        var defaultSource = net.config.default_source;
         if (defaultSource.type != "github") {
             throw "Unknown code source type  " + defaultSource.type;
         }
