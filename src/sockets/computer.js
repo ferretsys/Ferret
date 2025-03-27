@@ -1,5 +1,6 @@
 import { SYNCED_COMPUTERS } from "../data.js";
 import { getNetworkForToken, getSyncedNetwork, updateConnectedComputers } from "../server.js";
+import { handleServiceCallFromComputer } from "../service/serviceCalls.js";
 import { computerConnections, webConnections } from "../sockets.js";
 
 class ComputerConnection {
@@ -64,6 +65,10 @@ export function applyComputerSockets(app) {
                 net.computers[computerId].ferretState = message.state
                 net.setChanged(SYNCED_COMPUTERS);
                 connection.localFerretStateOrderstamp = parseInt(message.order)
+            }
+
+            if (message.type == "service_call") {
+                handleServiceCallFromComputer(net, connection, message);
             }
         });
 
