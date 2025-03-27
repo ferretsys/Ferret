@@ -109,6 +109,7 @@ export async function handleEmit(connection, token, endpoint, body) {
     var networkId = getNetworkForToken(token);
     var net = getSyncedNetwork(token);
     if (endpoint == "needs_data_for_table_content") {
+        if (!(body.sources instanceof Array)) return;
         for (var source of body.sources) {
             if (tableContentRequestHandlers[source]) {
                 connection.socket.send(JSON.stringify({
