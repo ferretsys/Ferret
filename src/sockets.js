@@ -1,5 +1,4 @@
-import { networkComputers } from "./data.js";
-import { getComputersOfNetwork, getFilesFromSourceForComputer, getNetworkForToken, getPackagesOfNetwork, getSourceOfComputer, updateConnectedComputers } from "./server.js";
+import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./server.js";
 import { handleEmit, handleRequest } from "./server_requests.js";
 import { applyComputerSockets } from "./sockets/computer.js";
 
@@ -21,10 +20,11 @@ async function handleWebSocketMessage(connection, data) {
 
 async function handleClientSourceSocketMessage(connection, data) {
     var reloadedCount = 0;
+    var net = connection.net;
     if (data.type == "trigger_reload") {
         for (var computerConnection of computerConnections) {
             if (connection.networkId != computerConnection.networkId) continue;
-            var source = getSourceOfComputer(computerConnection.networkId, computerConnection.computerId);
+            var source = net.computers[computerConnection.computerId].source;
             if (source == connection.sourceId) {
                 reloadedCount++;
                 var files = await getFilesFromSourceForComputer(net, computerConnection.computerId);
@@ -42,21 +42,19 @@ async function handleClientSourceSocketMessage(connection, data) {
     console.log("Reloaded", reloadedCount, "computers on", connection.sourceId);
 }
 
-export function notifyWebOfNewComputerData(networkId) {
+export function notifyWebOfNewComputerData(net) {
     for (var connection of webConnections) {
-        if (connection.networkId == networkId) {
-            var content = getComputersOfNetwork(networkId);
-            
+        if (connection.networkId == net.networkId) {
             //Old and new systems
             connection.socket.send(JSON.stringify({
                 type: "refresh_content",
                 content_id: "computers_list",
-                content: content
+                content: net.computers
             }));
             connection.socket.send(JSON.stringify({
                 type: "data_table_content",
                 source: "computers",
-                content: content
+                content: net.computers
             }));
         }
     }
@@ -175,6 +173,7 @@ export function applySockets(app) {
         var cookie = req.get("COOKIE");
         var networkToken = /authToken=([^;]+)/.exec(cookie)[1];
         var networkId = getNetworkForToken(networkToken);
+        var net = getSyncedNetwork(networkToken);
         if (networkId == null) {
             console.log("Rejected web connection");
             ws.send("Invalid token")
@@ -184,7 +183,8 @@ export function applySockets(app) {
         var connection = {
             socket: ws,
             networkToken: networkToken,
-            networkId: networkId
+            networkId: networkId,
+            net: net
         };
 
         webConnections.push(connection);

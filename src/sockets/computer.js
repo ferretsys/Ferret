@@ -1,5 +1,5 @@
-import { networkComputers } from "../data.js";
-import { getNetworkForToken, onNetworkComputersChaged, updateConnectedComputers } from "../server.js";
+import { SYNCED_COMPUTERS } from "../data.js";
+import { getNetworkForToken, getSyncedNetwork, updateConnectedComputers } from "../server.js";
 import { computerConnections, webConnections } from "../sockets.js";
 
 class ComputerConnection {
@@ -37,16 +37,21 @@ export function applyComputerSockets(app) {
         var networkToken = /authToken=([^;]+)/.exec(cookie)[1];
         var computerId = /computerid=([^;]+)/.exec(cookie)[1];
         var networkId = getNetworkForToken(networkToken);
+        var net = getSyncedNetwork(networkId);
+
         if (networkId == null) {
             console.log("Rejected computer connection");
             ws.send("Invalid token")
             ws.close()
             return;
         }
+
         var connection = new ComputerConnection(ws, networkToken, networkId, computerId);
         computerConnections.push(connection);
         connection.updateLastNetworkTime();
+
         updateConnectedComputers(networkId, computerConnections);
+
         ws.on('message', function(message) {
             connection.updateLastNetworkTime();
             try {
@@ -56,16 +61,18 @@ export function applyComputerSockets(app) {
             }
 
             if (message.type == "computer_notify_ferret_state" && parseInt(message.order) > connection.localFerretStateOrderstamp) {
-                networkComputers[networkId][computerId].ferretState = message.state
-                onNetworkComputersChaged(networkId);
+                net.computers[computerId].ferretState = message.state
+                net.setChanged(SYNCED_COMPUTERS);
                 connection.localFerretStateOrderstamp = parseInt(message.order)
             }
-        })
+        });
+
         ws.on('close', function () {
-            networkComputers[networkId][computerId].ferretState = "shutdown"
+            net.computers[computerId].ferretState = "shutdown";
             
             console.log("Computer connection closed");
             computerConnections.splice(computerConnections.indexOf(ws), 1);
+            
             updateConnectedComputers(networkId, computerConnections);
         });
     });

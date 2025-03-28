@@ -16,7 +16,7 @@ function addServerSocketRefreshHandler(id, handler) {
     refreshHandlers[id] = handler;
 }
 
-function setServerSocketMessageTypeHanlder(type, handler) {
+function setServerSocketMessageTypeHandler(type, handler) {
     messageTypeHandlers[type] = handler;
 }
 

@@ -2,12 +2,16 @@
     color: var(--text-col4);
 }
 
-#signout_image {
+.header-button > svg {
     height: 1em;
 }
 
-#signout_image path {
+#signout_image > path {
     stroke: var(--hard-border);
+}
+
+#dark_mode_image > path {
+    fill: var(--hard-border);
 }
 
 .color-indicator-cell {
@@ -29,4 +33,21 @@ content {
     margin-left: 20px;
     padding-left: 20px;
     border-left: 2px solid var(--soft-border);
+}
+
+.install-script-containers {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.install-script-container-divider {
+    border-right: 2px solid var(--soft-border);
+    height: stretch;
+    width: 2px;
+    content: "";
+}
+
+.install-script-container {
+    text-align: center;
 }
