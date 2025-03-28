@@ -2,12 +2,16 @@
     color: var(--text-col4);
 }
 
-#signout_image {
+.header-button > svg {
     height: 1em;
 }
 
-#signout_image path {
+#signout_image > path {
     stroke: var(--hard-border);
+}
+
+#dark_mode_image > path {
+    fill: var(--hard-border);
 }
 
 .color-indicator-cell {
