@@ -39,6 +39,7 @@ export async function handleRequest(token, endpoint, body) {
             files: files.split(",")
         };
         net.setChanged(SYNCED_CONFIG);
+        console.log("Added new packagee", name, files.split(","));
         return {result: "Added successfully", silent: true, clear: true};
     } else if (endpoint == "remove_package") {
         var name = body.name;
