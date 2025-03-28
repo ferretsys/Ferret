@@ -27,8 +27,8 @@ async function handleClientSourceSocketMessage(connection, data) {
             var source = getSourceOfComputer(computerConnection.networkId, computerConnection.computerId);
             if (source == connection.sourceId) {
                 reloadedCount++;
-                var files = await getFilesFromSourceForComputer(computerConnection.networkId, computerConnection.computerId);
-                networkComputers[connection.networkId][computerConnection.computerId].packageState = files == null ? "bad" : "ok";
+                var files = await getFilesFromSourceForComputer(net, computerConnection.computerId);
+                net.computers[computerConnection.computerId].packageState = files == null ? "bad" : "ok";
                 if (files != null) {
                     sendToComputerSocket(computerConnection.networkId, computerConnection.computerId, {
                         type: "action",
