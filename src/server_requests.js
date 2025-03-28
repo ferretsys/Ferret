@@ -26,7 +26,7 @@ export async function handleRequest(token, endpoint, body) {
             stats: serverStatistics
         }
     } else if (endpoint == "add_new_package") {
-        var packages = net.packages;
+        var packages = net.config.packages;
 
         var name = body.name;
         var files = body.files;
