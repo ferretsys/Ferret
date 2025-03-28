@@ -53,7 +53,7 @@ export async function getFileFromSourceForComputer(net, computerId, filename) {
         if (!connectionPresent) {
             console.log("Client fetch failed - missing connection");
             net.computers[computerId].source = "default";
-            net.setChanged();
+            net.setChanged(SYNCED_COMPUTERS);
             return await getFileFromSourceForComputer(net, computerId, filename);
         }
         console.log("Client fetch successful")

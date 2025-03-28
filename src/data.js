@@ -17,14 +17,14 @@ class SyncedNetworkData {
         networkConfigFile[this.networkId] = this.config;
         networkComputersFile[this.networkId] = this.computers;
 
-        for (var connection in webConnections) {
+        for (var connection of webConnections) {
             if (connection.networkId == this.networkId) {
                 var dataToSend = {};
                 dataToSend[group] = this[group];
-                connection.socket.send({
+                connection.socket.send(JSON.stringify({
                     type: "synced_network_data_change",
                     content: dataToSend
-                });
+                }));
             }
         }
 

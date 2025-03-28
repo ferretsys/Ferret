@@ -26,7 +26,7 @@ export async function handleRequest(token, endpoint, body) {
             stats: serverStatistics
         }
     } else if (endpoint == "add_new_package") {
-        var packages = net.packages;
+        var packages = net.config.packages;
 
         var name = body.name;
         var files = body.files;
@@ -39,6 +39,7 @@ export async function handleRequest(token, endpoint, body) {
             files: files.split(",")
         };
         net.setChanged(SYNCED_CONFIG);
+        console.log("Added new packagee", name, files.split(","));
         return {result: "Added successfully", silent: true, clear: true};
     } else if (endpoint == "remove_package") {
         var name = body.name;
@@ -109,6 +110,7 @@ export async function handleEmit(connection, token, endpoint, body) {
     var networkId = getNetworkForToken(token);
     var net = getSyncedNetwork(token);
     if (endpoint == "needs_data_for_table_content") {
+        if (!(body.sources instanceof Array)) return;
         for (var source of body.sources) {
             if (tableContentRequestHandlers[source]) {
                 connection.socket.send(JSON.stringify({

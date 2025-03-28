@@ -1,5 +1,5 @@
 window.Pages = [
-    "legacy_main",
+    "main",
     "system/computers",
     "system/packages",
 ]

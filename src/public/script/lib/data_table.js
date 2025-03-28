@@ -134,7 +134,8 @@ class DataTable {
         newInner.appendChild(headerRow);
 
         for (var key in this.content[this.entriesSource]) {
-            var entry = this.content[this.entriesSource][key]
+            var entry = this.content[this.entriesSource][key];
+            entry = {...entry, key: key};
             var newRow = document.createElement("tr");
 
             for (var field of this.fields) {
@@ -145,6 +146,7 @@ class DataTable {
 
             newInner.appendChild(newRow);
         }
+
         this._innerElement.remove();
         this.element.appendChild(newInner);
         this._innerElement = newInner;
