@@ -1,4 +1,4 @@
-<h2>Computers</h2>
+<!-- <h2>Computers</h2>
 <div class="indented-container">
     <table id="computers_list">
     </table>
@@ -15,19 +15,26 @@
             <td><button id="add_package_button" onclick="submitNewPackage()">Add</button></td>
         </tr>
     </table>
+</div> -->
+
+<div class="install-script-containers">
+    <div class="install-script-container">
+        <h2>Install Script</h2>
+        <input id="install_command" readonly autocomplete="one-time-code"></input>
+        <button onclick="copyInstallCommand()">
+            Copy
+        </button>
+    </div>
+    <div class="install-script-container-divider"></div>
+    <div class="install-script-container">
+        <h2>Client Script</h2>
+        <input id="client_command" readonly autocomplete="one-time-code"></input>
+        <button onclick="copyClientCommand()">
+            Copy
+        </button>
+    </div>
 </div>
 
-<h2>Install Script</h2>
-<input id="install_command" readonly autocomplete="one-time-code"></input>
-<button onclick="copyInstallCommand()">
-    Copy
-</button>
-
-<h2>Client Script</h2>
-<input id="client_command" readonly autocomplete="one-time-code"></input>
-<button onclick="copyClientCommand()">
-    Copy
-</button>
 
 
 <p>

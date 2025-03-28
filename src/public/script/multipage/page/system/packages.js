@@ -4,7 +4,7 @@ var packages_context = getCurrentLoadContext();
 
 var table = new DataTable([
     new DataTableCell("Name", (cell, entry, data) => {
-        return cell.textLabel(entry.name);
+        return cell.textLabel(entry.key);
     }),
     new DataTableCell("Files", (cell, entry, data) => {
         return cell.textLabel(entry.files);

@@ -30,3 +30,20 @@ content {
     padding-left: 20px;
     border-left: 2px solid var(--soft-border);
 }
+
+.install-script-containers {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.install-script-container-divider {
+    border-right: 2px solid var(--soft-border);
+    height: stretch;
+    width: 2px;
+    content: "";
+}
+
+.install-script-container {
+    text-align: center;
+}
