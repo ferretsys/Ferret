@@ -1,4 +1,4 @@
-import { handleStatisticsCallFromComputer } from "./statistics/statistics";
+import { handleStatisticsCallFromComputer } from "./statistics/statistics.js";
 
 export function handleServiceCallFromComputer(network, computerConnection, message) {
     if (!message.endpoint) {

@@ -24,7 +24,7 @@ var table = new DataTable([
         });
     }),
     new DataTableCell("Package", (cell, entry, data) => {
-        var packageDropdownOptions = convertPackageNamesToTree(Object.keys(data.packages || {}));
+        var packageDropdownOptions = convertUngroupedNamesToTree(Object.keys(data.packages || {}), ".");
 
         packageDropdownOptions.entries = packageDropdownOptions.entries || [];
         packageDropdownOptions.entries.push({value: null, text: "No package", class: "dropdown-option-no-package"});

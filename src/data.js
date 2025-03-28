@@ -1,10 +1,17 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { webConnections } from "./sockets.js";
+import { getClientSourcesOfNetwork, webConnections } from "./sockets.js";
 
 export var syncedNetworkData = {};
 
-export const SYNCED_CONFIG = "data";
-export const SYNCED_COMPUTERS = "computers";
+export const SYNCED_COMPUTERS = {name: "computers", getter: async (net) => net.computers};
+export const SYNCED_PACKAGES = {name: "packages", getter: async (net) => net.config.packages};
+export const SYNCED_SOURCES = {name: "sources", getter: async (net) => getClientSourcesOfNetwork(net.networkId)};
+
+export const dataRequestHandlers = {
+    "computers": SYNCED_COMPUTERS,
+    "packages": SYNCED_PACKAGES,
+    "sources": SYNCED_SOURCES,
+}
 
 class SyncedNetworkData {
     constructor(networkConfig, computerData, networkId) {
@@ -13,17 +20,21 @@ class SyncedNetworkData {
         this.networkId = networkId;
     }
 
-    setChanged(group) {
+    async setChanged(group) {
         networkConfigFile[this.networkId] = this.config;
         networkComputersFile[this.networkId] = this.computers;
 
+        if (group.getter(this) == null) {
+            console.log("Unable to set group " + group + " as changed, it does not exist in the network data");
+            return;
+        }
+
         for (var connection of webConnections) {
             if (connection.networkId == this.networkId) {
-                var dataToSend = {};
-                dataToSend[group] = this[group];
                 connection.socket.send(JSON.stringify({
-                    type: "synced_network_data_change",
-                    content: dataToSend
+                    type: "data_table_content",
+                    source: group.name,
+                    content: await group.getter(this),
                 }));
             }
         }

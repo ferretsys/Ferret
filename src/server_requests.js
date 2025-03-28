@@ -1,4 +1,4 @@
-import { SYNCED_COMPUTERS, SYNCED_CONFIG } from "./data.js";
+import { dataRequestHandlers, SYNCED_COMPUTERS, SYNCED_PACKAGES } from "./data.js";
 import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./server.js";
 import { getClientSourcesOfNetwork, sendToComputerSocket } from "./sockets.js";
 import { existsSync, readFileSync } from "fs";
@@ -38,13 +38,13 @@ export async function handleRequest(token, endpoint, body) {
         net.config.packages[name] = {
             files: files.split(",")
         };
-        net.setChanged(SYNCED_CONFIG);
+        net.setChanged(SYNCED_PACKAGES);
         console.log("Added new packagee", name, files.split(","));
         return {result: "Added successfully", silent: true, clear: true};
     } else if (endpoint == "remove_package") {
         var name = body.name;
 
-        var packages = getPackagesOfNetwork(networkId);
+        var packages = net.config.packages;
         if (!packages[name]) return {result: "Package with name doesen't exist!"};
 
         for (var computerId in packages) {
@@ -55,7 +55,7 @@ export async function handleRequest(token, endpoint, body) {
         }
 
         delete net.config.packages[name];
-        net.setChanged(SYNCED_CONFIG);
+        net.setChanged(SYNCED_PACKAGES);
         return {result: "Removed successfully", silent: true};
     } else if (endpoint == "remove_computer") {
         var computerId = body.computer_id;
@@ -94,29 +94,17 @@ export async function handleRequest(token, endpoint, body) {
     }
 }
 
-var tableContentRequestHandlers = {
-    "computers": async (net) => {
-        return net.computers
-    },
-    "packages": async (net) => {
-        return net.config.packages
-    },
-    "sources": async (net) => {
-        return getClientSourcesOfNetwork(net.networkId)
-    },
-}
-
 export async function handleEmit(connection, token, endpoint, body) {
     var networkId = getNetworkForToken(token);
     var net = getSyncedNetwork(token);
     if (endpoint == "needs_data_for_table_content") {
         if (!(body.sources instanceof Array)) return;
         for (var source of body.sources) {
-            if (tableContentRequestHandlers[source]) {
+            if (dataRequestHandlers[source]) {
                 connection.socket.send(JSON.stringify({
                     type: "data_table_content",
                     source: source,
-                    content: await tableContentRequestHandlers[source](net)
+                    content: await dataRequestHandlers[source].getter(net)
                 }));
             } else {
                 console.log("Unknown source for table prefetch", source)
@@ -148,7 +136,7 @@ export async function handleEmit(connection, token, endpoint, body) {
     }
     if (endpoint == "set_computer_package") {
         net.computers[body.computer_id].package = body.package;
-        net.setChanged(SYNCED_CONFIG);
+        net.setChanged(SYNCED_PACKAGES);
         return;
     }
     if (endpoint == "set_computer_source") {

@@ -9,6 +9,11 @@ var table = new DataTable([
     new DataTableCell("Files", (cell, entry, data) => {
         return cell.textLabel(entry.files);
     }),
+    new DataTableCell("Remove", (cell, entry, data) => {
+        return cell.button("Remove", () => {
+            tryRemovePackage(entry.key)
+        }, "remove_package_button_" + entry.key.replaceAll(".", "_"));
+    }),
 ], ["packages"], "packages");
 
 table.build();

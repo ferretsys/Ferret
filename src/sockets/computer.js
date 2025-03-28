@@ -51,7 +51,7 @@ export function applyComputerSockets(app) {
         computerConnections.push(connection);
         connection.updateLastNetworkTime();
 
-        updateConnectedComputers(networkId, computerConnections);
+        updateConnectedComputers(net, computerConnections);
 
         ws.on('message', function(message) {
             connection.updateLastNetworkTime();
@@ -78,7 +78,7 @@ export function applyComputerSockets(app) {
             console.log("Computer connection closed");
             computerConnections.splice(computerConnections.indexOf(ws), 1);
             
-            updateConnectedComputers(networkId, computerConnections);
+            updateConnectedComputers(net, computerConnections);
         });
     });
 }

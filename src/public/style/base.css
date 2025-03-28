@@ -108,11 +108,18 @@ header > h1 {
   padding: 10px 0;
 }
 
+page {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
+  /* padding: 0 10vw;
+  box-sizing: border-box; */
+}
+
 content {
-  display: block;
-  width: 100vw;
-  padding: 0 10vw;
-  box-sizing: border-box;
+  width: 90vw;
+  min-width: min(1000px, 100%);
 }
 
 .tippy-content {
