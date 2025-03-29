@@ -27,10 +27,7 @@ local function tryForWebSocketReconnection()
         else
             print("Connected to websocket host " .. socketHost)
             SocketTimeOfLastSignal = os.clock()
-            SendRawToServer({
-                type="computer_notify_state",
-                state="reconnected"
-            });
+            SendFerretState("reconnected")
         end
     end
 end
@@ -64,10 +61,7 @@ local function checkForNetworkEvents(event)
     local data = textutils.unserializeJSON(message);
     if data.type == "action" then
         if data.action == "refresh_computer_source" then
-            SendRawToServer({
-                type="computer_notify_state",
-                state="refreshing_computer_source"
-            });
+            SendFerretState("refreshing_computer_source");
             print("Refreshing source")
 
             shell.run("rm /src/")
@@ -81,10 +75,7 @@ local function checkForNetworkEvents(event)
             end
             WriteAllFile("startup.txt", startup)
             print("Rebooting...")
-            SendRawToServer({
-                type="computer_notify_state",
-                state="rebooting"
-            });
+            SendFerretState("rebooting")
             shell.run("reboot")
         end
     end
@@ -104,4 +95,14 @@ end
 
 function SendRawToServer(content)
     socket.send(textutils.serialiseJSON(content));
+end
+
+local order = 0
+function SendFerretState(state)
+    order = order + 1
+    SendRawToServer({
+        type="computer_notify_ferret_state",
+        state=state,
+        order=order
+    });
 end
