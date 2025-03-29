@@ -60,7 +60,7 @@ export async function handleRequest(token, endpoint, body) {
     } else if (endpoint == "remove_computer") {
         var computerId = body.computer_id;
 
-        var computers = getComputersOfNetwork(networkId);
+        var computers = net.computers;
         if (!computers[computerId]) return {result: "Computer with name doesen't exist!"};
 
         if (computers[computerId].connectedState) return {result: "Computer must be disconnected!"};
