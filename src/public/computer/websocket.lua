@@ -87,8 +87,13 @@ local function checkForNetworkEvents(event)
 end
 
 function RunWebsocketThread()
+    local lastTimerId = os.startTimer(30) -- Used for tryForWebSocketReconnection
     while true do
         local eventData = {os.pullEvent()}
+        if eventData[1] == "timer" and eventData[1] == lastTimerId then
+            checkForNetworkEvents(eventData)
+            lastTimerId = os.startTimer(30)
+        end
         checkForNetworkEvents(eventData)
     end
 end

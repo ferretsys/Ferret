@@ -13,5 +13,6 @@ function updateStats() {
         document.getElementById("server_stats").innerHTML = `server info: ${entries.join(" / ")}`;
     });
 }
+
 updateStats();
 setInterval(updateStats, 10000);

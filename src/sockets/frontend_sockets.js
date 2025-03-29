@@ -1,7 +1,7 @@
-import { SYNCED_SOURCES } from "./data.js";
-import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./server.js";
-import { handleEmit, handleRequest } from "./server_requests.js";
-import { applyComputerSockets } from "./sockets/computer.js";
+import { SYNCED_SOURCES } from "../network_data.js";
+import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "../index.js";
+import { handleEmit, handleRequest } from "../server_requests.js";
+import { applyComputerSockets } from "./computer_sockets.js";
 
 export var computerConnections = [];
 export var webConnections = [];
@@ -42,59 +42,6 @@ async function handleClientSourceSocketMessage(connection, data) {
     }
     console.log("Reloaded", reloadedCount, "computers on", connection.sourceId);
 }
-
-// export function notifyWebOfNewComputerData(net) {
-//     for (var connection of webConnections) {
-//         if (connection.networkId == net.networkId) {
-//             //Old and new systems
-//             connection.socket.send(JSON.stringify({
-//                 type: "refresh_content",
-//                 content_id: "computers_list",
-//                 content: net.computers
-//             }));
-//             connection.socket.send(JSON.stringify({
-//                 type: "data_table_content",
-//                 source: "computers",
-//                 content: net.computers
-//             }));
-//         }
-//     }
-// }
-
-// export function notifyWebOfNewPackageData(networkId) {
-//     for (var connection of webConnections) {
-//         if (connection.networkId == networkId) {
-//             var content = getPackagesOfNetwork(networkId);
-            
-//             connection.socket.send(JSON.stringify({
-//                 type: "refresh_content",
-//                 content_id: "packages_list",
-//                 content: content
-//             }));
-//             connection.socket.send(JSON.stringify({
-//                 type: "data_table_content",
-//                 source: "packages",
-//                 content: content
-//             }));
-//         }
-//     }
-// }
-
-// export function notifyWebOfNewClientSourceData(networkId, clientSourceConnections) {
-//     var connectionIds = [];
-//     for (var connection of clientSourceConnections) {
-//         connectionIds.push(connection.sourceId);
-//     }
-//     for (var connection of webConnections) {
-//         if (connection.networkId == networkId) {
-//             connection.socket.send(JSON.stringify({
-//                 type: "refresh_content",
-//                 content_id: "client_sources_list",
-//                 content: connectionIds
-//             }));
-//         }
-//     }
-// }
 
 export function sendToComputerSocket(networkId, computerId, data) {
     for (var connection of computerConnections) {

@@ -1,6 +1,6 @@
-import { dataRequestHandlers, SYNCED_COMPUTERS, SYNCED_PACKAGES } from "./data.js";
-import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./server.js";
-import { getClientSourcesOfNetwork, sendToComputerSocket } from "./sockets.js";
+import { dataRequestHandlers, SYNCED_COMPUTERS, SYNCED_PACKAGES } from "./network_data.js";
+import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./index.js";
+import { getClientSourcesOfNetwork, sendToComputerSocket } from "./sockets/frontend_sockets.js";
 import { existsSync, readFileSync } from "fs";
 
 var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt").toString() : "UNKNOWN";
@@ -102,7 +102,7 @@ export async function handleEmit(connection, token, endpoint, body) {
         for (var source of body.sources) {
             if (dataRequestHandlers[source]) {
                 connection.socket.send(JSON.stringify({
-                    type: "data_table_content",
+                    type: "data_content",
                     source: source,
                     content: await dataRequestHandlers[source].getter(net)
                 }));
@@ -112,16 +112,20 @@ export async function handleEmit(connection, token, endpoint, body) {
         }
         return;
     }
-    // if (endpoint == "needs_data_for_all_table_content") {
-    //     for (var source in tableContentRequestHandlers) {
-    //         connection.socket.send(JSON.stringify({
-    //             type: "data_table_content",
-    //             source: source,
-    //             content: await tableContentRequestHandlers[source](net)
-    //         }));
-    //     }
-    //     return;
-    // }
+    if (endpoint == "needs_data_for_all_table_content") {
+        for (var source of Object.keys(dataRequestHandlers)) {
+            if (dataRequestHandlers[source]) {
+                connection.socket.send(JSON.stringify({
+                    type: "data_content",
+                    source: source,
+                    content: await dataRequestHandlers[source].getter(net)
+                }));
+            } else {
+                console.log("Unknown source for table prefetch", source)
+            }
+        }
+        return;
+    }
     if (endpoint == "refresh_computer_source") {
         var files = await getFilesFromSourceForComputer(net, body.computer_id);
         net.computers[body.computer_id].packageState = files == null ? "bad" : "ok";

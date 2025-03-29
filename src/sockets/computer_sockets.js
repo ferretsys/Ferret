@@ -1,7 +1,7 @@
-import { SYNCED_COMPUTERS } from "../data.js";
-import { getNetworkForToken, getSyncedNetwork, updateConnectedComputers } from "../server.js";
+import { SYNCED_COMPUTERS } from "../network_data.js";
+import { getNetworkForToken, getSyncedNetwork, updateConnectedComputers } from "../index.js";
 import { handleServiceCallFromComputer } from "../service/serviceCalls.js";
-import { computerConnections, webConnections } from "../sockets.js";
+import { computerConnections, webConnections } from "./frontend_sockets.js";
 
 class ComputerConnection {
     constructor(ws, networkToken, networkId, computerId) {

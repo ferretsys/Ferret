@@ -3,8 +3,8 @@ import express from "express";
 import expressWs from "express-ws";
 import path from "path";
 import { fileURLToPath } from "url";
-import { addComputerToServer, getNetworkForToken, getSyncedNetwork } from "./server.js";
-import { applySockets } from "./sockets.js";
+import { addComputerToServer, getNetworkForToken, getSyncedNetwork } from "./index.js";
+import { applySockets } from "./sockets/frontend_sockets.js";
 import { existsSync, readFileSync } from "fs";
 
 const app = express();

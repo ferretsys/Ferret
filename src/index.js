@@ -1,6 +1,6 @@
-import {} from "./web.js";//Load
-import { networkTokens, SYNCED_COMPUTERS, syncedNetworkData } from "./data.js";
-import { getFileFromClientSourceForComputer } from "./sockets.js";
+import {} from "./webhost.js";//Load
+import { CONNECTED_COMPUTERS_CHART, networkTokens, SYNCED_COMPUTERS, syncedNetworkData } from "./network_data.js";
+import { getFileFromClientSourceForComputer } from "./sockets/frontend_sockets.js";
 import { serverStatistics } from "./server_requests.js";
 
 var networkByToken = {};
@@ -91,5 +91,7 @@ export function updateConnectedComputers(net, computerConnections) {
         net.computers[computerid].connectedState = connectedComputers[computerid] != undefined;
     }
     serverStatistics.connected_computers = count;
+    net.computerConnectedCountChartData[net.computerConnectedCountChartData.length - 1] = count;
+    net.setChanged(CONNECTED_COMPUTERS_CHART);
     net.setChanged(SYNCED_COMPUTERS);
 }

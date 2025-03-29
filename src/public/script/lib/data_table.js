@@ -161,7 +161,13 @@ class DataTable {
     }
 }
 
-setServerSocketMessageTypeHandler("data_table_content", (data) => {
+var dataContentConsumers = [];
+
+function addDataContentConsumer(source, consumer) {
+    dataContentConsumers.push({consumer: consumer, source: source});
+}
+
+setServerSocketMessageTypeHandler("data_content", (data) => {
     console.log("Recived data table content", data);
 
     var dataSourceTarget = data.source;
@@ -171,6 +177,12 @@ setServerSocketMessageTypeHandler("data_table_content", (data) => {
         if (activeDataTable.sources.indexOf(dataSourceTarget) != -1) {
             activeDataTable.content[dataSourceTarget] = dataContent;
             activeDataTable.update();
+        }
+    }
+
+    for (var consumer of dataContentConsumers) {
+        if (consumer.source == dataSourceTarget) {
+            consumer.consumer(dataContent);
         }
     }
 });
@@ -193,4 +205,4 @@ setServerSocketMessageTypeHandler("heartbeat_tick", (data) => {
     }
 });
 
-// emitServerSocketApi("needs_data_for_all_table_content");
+emitServerSocketApi("needs_data_for_all_table_content");

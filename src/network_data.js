@@ -1,23 +1,32 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { getClientSourcesOfNetwork, webConnections } from "./sockets.js";
+import { getClientSourcesOfNetwork, webConnections } from "./sockets/frontend_sockets.js";
 
 export var syncedNetworkData = {};
 
 export const SYNCED_COMPUTERS = {name: "computers", getter: async (net) => net.computers};
 export const SYNCED_PACKAGES = {name: "packages", getter: async (net) => net.config.packages};
 export const SYNCED_SOURCES = {name: "sources", getter: async (net) => getClientSourcesOfNetwork(net.networkId)};
+export const CONNECTED_COMPUTERS_CHART = {name: "connected_computers_chart", getter: async (net) => net.computerConnectedCountChartData};
 
 export const dataRequestHandlers = {
     "computers": SYNCED_COMPUTERS,
     "packages": SYNCED_PACKAGES,
     "sources": SYNCED_SOURCES,
+    "connected_computers_chart": CONNECTED_COMPUTERS_CHART,
 }
 
-class SyncedNetworkData {
+class SyncedNetwork {
     constructor(networkConfig, computerData, networkId) {
         this.config = networkConfig;
         this.computers = computerData;
         this.networkId = networkId;
+
+        this.computerConnectedCountChartData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        this.computerConnectedCountTicker = setInterval(() => {
+            this.computerConnectedCountChartData.shift();
+            this.computerConnectedCountChartData.push(this.computerConnectedCountChartData[this.computerConnectedCountChartData.length - 1]);
+            this.setChanged(CONNECTED_COMPUTERS_CHART);
+        }, 1000 * 30);
     }
 
     async setChanged(group) {
@@ -32,7 +41,7 @@ class SyncedNetworkData {
         for (var connection of webConnections) {
             if (connection.networkId == this.networkId) {
                 connection.socket.send(JSON.stringify({
-                    type: "data_table_content",
+                    type: "data_content",
                     source: group.name,
                     content: await group.getter(this),
                 }));
@@ -76,7 +85,7 @@ createNetworksForFileData();
 
 function createNetworksForFileData() {
     for (var networkId of Object.keys(networkTokens)) {
-        syncedNetworkData[networkId] = new SyncedNetworkData(networkConfigFile[networkId], networkComputersFile[networkId], networkId);
+        syncedNetworkData[networkId] = new SyncedNetwork(networkConfigFile[networkId], networkComputersFile[networkId], networkId);
     }
 }
 
