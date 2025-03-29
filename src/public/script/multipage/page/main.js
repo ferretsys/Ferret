@@ -41,14 +41,9 @@ const computerCountChart = new Chart(computerCountChartElement, {
         }]
     },
     options: {
-        responsive: true,
-        maintainAspectRatio: false,
         scales: {
             y: {
                 beginAtZero: true,
-                ticks: {
-                    stepSize: 1
-                }
             },
             x: {
                 title: {

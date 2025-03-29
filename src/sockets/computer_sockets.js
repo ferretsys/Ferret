@@ -1,11 +1,12 @@
 import { SYNCED_COMPUTERS } from "../network_data.js";
 import { getNetworkForToken, getSyncedNetwork, updateConnectedComputers } from "../index.js";
-import { handleServiceCallFromComputer } from "../service/serviceCalls.js";
+import { handleServiceCallFromComputer } from "../service/service_calls.js";
 import { computerConnections, webConnections } from "./frontend_sockets.js";
+import { Connection } from "./connection.js";
 
-class ComputerConnection {
+class ComputerConnection extends Connection {
     constructor(ws, networkToken, networkId, computerId) {
-        this.socket = ws;
+        super(ws);
         this.networkToken = networkToken;
         this.networkId = networkId;
         this.computerId = computerId;
@@ -79,6 +80,7 @@ export function applyComputerSockets(app) {
             computerConnections.splice(computerConnections.indexOf(ws), 1);
             
             updateConnectedComputers(net, computerConnections);
+            connection.onDisconnect();
         });
 
         var connection = new ComputerConnection(ws, networkToken, networkId, computerId);

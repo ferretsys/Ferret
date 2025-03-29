@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { getClientSourcesOfNetwork, webConnections } from "./sockets/frontend_sockets.js";
+import { getDataStreamsForNetwork } from "./service/data/data_stream.js";
 
 export var syncedNetworkData = {};
 
@@ -7,12 +8,24 @@ export const SYNCED_COMPUTERS = {name: "computers", getter: async (net) => net.c
 export const SYNCED_PACKAGES = {name: "packages", getter: async (net) => net.config.packages};
 export const SYNCED_SOURCES = {name: "sources", getter: async (net) => getClientSourcesOfNetwork(net.networkId)};
 export const CONNECTED_COMPUTERS_CHART = {name: "connected_computers_chart", getter: async (net) => net.computerConnectedCountChartData};
+export const DATA_SOURCES = {name: "data_sources", getter: async (net) => {
+    var sources = getDataStreamsForNetwork(net);
+    var result = {};
+    for (var source of Object.keys(sources)) {
+        result[source] = {
+            name: source,
+            subscribers: sources[source].subscribers.length,
+        };
+    }
+    return result;
+}};
 
 export const dataRequestHandlers = {
     "computers": SYNCED_COMPUTERS,
     "packages": SYNCED_PACKAGES,
     "sources": SYNCED_SOURCES,
     "connected_computers_chart": CONNECTED_COMPUTERS_CHART,
+    "data_sources": DATA_SOURCES,
 }
 
 class SyncedNetwork {

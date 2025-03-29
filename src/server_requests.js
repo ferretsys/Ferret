@@ -1,7 +1,8 @@
-import { dataRequestHandlers, SYNCED_COMPUTERS, SYNCED_PACKAGES } from "./network_data.js";
+import { DATA_SOURCES, dataRequestHandlers, SYNCED_COMPUTERS, SYNCED_PACKAGES } from "./network_data.js";
 import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./index.js";
 import { computerConnections, getClientSourcesOfNetwork, sendToComputerSocket } from "./sockets/frontend_sockets.js";
 import { existsSync, readFileSync } from "fs";
+import { DATA_STREAMS_OF_NETWORKS, getDataStream, getDataStreamsForNetwork } from "./service/data/data_stream.js";
 
 var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt").toString() : "UNKNOWN";
 console.log("Found server hash " + serverHash);
@@ -67,6 +68,20 @@ export async function handleRequest(token, endpoint, body) {
 
         delete net.computers[computerId];
         net.setChanged(SYNCED_COMPUTERS);
+        return {result: "Removed successfully", silent: true};
+    } else if (endpoint == "remove_data_source") {
+        var sourceName = body.name;
+        var source = getDataStream(net, sourceName);
+        if (!source) return {result: "Source with name doesen't exist!"};
+
+        source.subscribers.forEach(subscriber => {
+            subscriber.socket.send(JSON.stringify({
+                type: "data_stream_disconnected",
+                data_stream_name: sourceName
+            }));
+        })
+        delete DATA_STREAMS_OF_NETWORKS[net.networkId][sourceName];
+        net.setChanged(DATA_SOURCES);
         return {result: "Removed successfully", silent: true};
     } else if (endpoint == "kick_computer") {
         var computerId = body.computer_id;
