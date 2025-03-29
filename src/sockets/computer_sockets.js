@@ -34,6 +34,7 @@ class ComputerConnection {
 export function applyComputerSockets(app) {
     app.ws("/socket/computer", function (ws, req) {
         console.log("New connection by computer");
+        
         var cookie = req.get("COOKIE");
         var networkToken = /authToken=([^;]+)/.exec(cookie)[1];
         var computerId = /computerid=([^;]+)/.exec(cookie)[1];
@@ -46,12 +47,6 @@ export function applyComputerSockets(app) {
             ws.close()
             return;
         }
-
-        var connection = new ComputerConnection(ws, networkToken, networkId, computerId);
-        computerConnections.push(connection);
-        connection.updateLastNetworkTime();
-
-        updateConnectedComputers(net, computerConnections);
 
         ws.on('message', function(message) {
             connection.updateLastNetworkTime();
@@ -85,5 +80,11 @@ export function applyComputerSockets(app) {
             
             updateConnectedComputers(net, computerConnections);
         });
+
+        var connection = new ComputerConnection(ws, networkToken, networkId, computerId);
+        computerConnections.push(connection);
+        connection.updateLastNetworkTime();
+
+        updateConnectedComputers(net, computerConnections);
     });
 }

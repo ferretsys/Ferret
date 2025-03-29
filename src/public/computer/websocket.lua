@@ -8,6 +8,8 @@ IsWebSocketValid = socket ~= false
 SocketTimeOfLastReattempt = 0
 SocketTimeOfLastSignal = 0
 local reattemptInterval = 30
+local lastFerretState = "none"
+local resyncFerretState = nil
 
 if not IsWebSocketValid then
     print("Failed to connect to websocket host " .. socketHost)
@@ -19,6 +21,7 @@ SocketTimeOfLastReattempt = os.clock()
 
 local function tryForWebSocketReconnection()
     if os.clock() - SocketTimeOfLastReattempt > reattemptInterval then
+        print("Attempting reconnection " .. socketHost)
         SocketTimeOfLastReattempt = os.clock()
         socket = http.websocket(socketHost, socketHeaders)
         IsWebSocketValid = socket ~= false
@@ -26,8 +29,9 @@ local function tryForWebSocketReconnection()
             print("(Reattempt) Failed to connect to websocket host " .. socketHost)
         else
             print("Connected to websocket host " .. socketHost)
+            lastFerretState = "reconnected"
+            resyncFerretState = os.startTimer(1)
             SocketTimeOfLastSignal = os.clock()
-            SendFerretState("reconnected")
         end
     end
 end
@@ -85,8 +89,12 @@ function RunWebsocketThread()
     local lastTimerId = os.startTimer(30) -- Used for tryForWebSocketReconnection
     while true do
         local eventData = {os.pullEvent()}
+        if resyncFerretState ~= nil and eventData[1] == "timer" and eventData[1] == resyncFerretState then
+            SendFerretState(lastFerretState)
+        end
         if eventData[1] == "timer" and eventData[1] == lastTimerId then
             checkForNetworkEvents(eventData)
+            SendFerretState(lastFerretState)
             lastTimerId = os.startTimer(30)
         end
         checkForNetworkEvents(eventData)
@@ -100,6 +108,10 @@ end
 local order = 0
 function SendFerretState(state)
     order = order + 1
+    lastFerretState = state
+    if not IsWebSocketValid then
+        return
+    end
     SendRawToServer({
         type="computer_notify_ferret_state",
         state=state,
