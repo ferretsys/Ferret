@@ -50,6 +50,11 @@ var table = new DataTable([
             });
         }, "refresh_computer_source_" + entry.id);
     }),
+    new DataTableCell("Kick", (cell, entry, data) => {
+        return cell.button("Kick", () => {
+            tryKickComputer(entry.id)
+        }, "kick_computer_button_" + entry.id);
+    }),
     new DataTableCell("Remove", (cell, entry, data) => {
         return cell.button("Remove", () => {
             tryRemoveComputer(entry.id)

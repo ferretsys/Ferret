@@ -55,3 +55,16 @@ function tryRemoveComputer(computerId) {
         }
     });
 }
+
+function tryKickComputer(computerId) {
+    callServerSocketApi("kick_computer", {
+        computer_id: computerId
+    }).then((data) => {
+        console.log(data)
+        if (!data.silent) {
+            inputIssue("kick_computer_button_" + computerId, data.result)
+        } else {
+            console.log(data.result)
+        }
+    });
+}

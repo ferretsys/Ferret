@@ -46,10 +46,10 @@ local function RunStartupThread()
             end
         end
     else
-        term.setTextColor(colors.red);
-        print("No startup specified")
-        SendFerretState("idle_no_startup");
+        term.setTextColor(colors.yellow);
+        print("No startup specified");
         term.setTextColor(colors.white);
+        SendFerretState("idle_no_startup");
     end
 end
 

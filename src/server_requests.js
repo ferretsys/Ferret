@@ -1,6 +1,6 @@
 import { dataRequestHandlers, SYNCED_COMPUTERS, SYNCED_PACKAGES } from "./network_data.js";
 import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./index.js";
-import { getClientSourcesOfNetwork, sendToComputerSocket } from "./sockets/frontend_sockets.js";
+import { computerConnections, getClientSourcesOfNetwork, sendToComputerSocket } from "./sockets/frontend_sockets.js";
 import { existsSync, readFileSync } from "fs";
 
 var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt").toString() : "UNKNOWN";
@@ -68,6 +68,23 @@ export async function handleRequest(token, endpoint, body) {
         delete net.computers[computerId];
         net.setChanged(SYNCED_COMPUTERS);
         return {result: "Removed successfully", silent: true};
+    } else if (endpoint == "kick_computer") {
+        var computerId = body.computer_id;
+
+        var computers = net.computers;
+        if (!computers[computerId]) return {result: "Computer with name doesen't exist!"};
+
+        if (!computers[computerId].connectedState) return {result: "Computer must be connected!"};
+
+        for (var connection of computerConnections) {
+            if (connection.networkId == networkId && connection.computerId == computerId) {
+                connection.socket.close();
+                return;
+            }
+        }
+
+        net.setChanged(SYNCED_COMPUTERS);
+        return {result: "Kicked successfully", silent: true};
     } else if (endpoint == "refresh_computer_source") {
         if (!net.computers[body.computer_id].connectedState) {   
             return { result: "Failed to update, computer is not connected!" }
