@@ -198,7 +198,7 @@ function animateHeartbeat(element) {
 }
 
 setServerSocketMessageTypeHandler("heartbeat_tick", (data) => {
-    console.log("Recived data heartbeat content", data);
+    // console.log("Recived data heartbeat content", data);
     heartbeats["heartbeat-" + data.group + "-" + data.id] = Date.now();
     for (var element of document.getElementsByClassName("heartbeat-" + data.group + "-" + data.id)) {
         animateHeartbeat(element);

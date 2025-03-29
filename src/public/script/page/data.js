@@ -52,6 +52,7 @@ function rebuildDataElementForFormat(format) {
                 scales: {
                     y: {
                         beginAtZero: true,
+                        max: 100,
                     }
                 },
                 plugins: {
