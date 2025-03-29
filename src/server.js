@@ -1,6 +1,6 @@
 import {} from "./web.js";//Load
 import { networkTokens, SYNCED_COMPUTERS, syncedNetworkData } from "./data.js";
-import { getFileFromClientSourceForComputer, notifyWebOfNewComputerData, notifyWebOfNewPackageData } from "./sockets.js";
+import { getFileFromClientSourceForComputer } from "./sockets.js";
 import { serverStatistics } from "./server_requests.js";
 
 var networkByToken = {};

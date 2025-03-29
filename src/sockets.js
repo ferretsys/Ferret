@@ -1,3 +1,4 @@
+import { SYNCED_SOURCES } from "./data.js";
 import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./server.js";
 import { handleEmit, handleRequest } from "./server_requests.js";
 import { applyComputerSockets } from "./sockets/computer.js";
@@ -42,57 +43,58 @@ async function handleClientSourceSocketMessage(connection, data) {
     console.log("Reloaded", reloadedCount, "computers on", connection.sourceId);
 }
 
-export function notifyWebOfNewComputerData(net) {
-    for (var connection of webConnections) {
-        if (connection.networkId == net.networkId) {
-            //Old and new systems
-            connection.socket.send(JSON.stringify({
-                type: "refresh_content",
-                content_id: "computers_list",
-                content: net.computers
-            }));
-            connection.socket.send(JSON.stringify({
-                type: "data_table_content",
-                source: "computers",
-                content: net.computers
-            }));
-        }
-    }
-}
+// export function notifyWebOfNewComputerData(net) {
+//     for (var connection of webConnections) {
+//         if (connection.networkId == net.networkId) {
+//             //Old and new systems
+//             connection.socket.send(JSON.stringify({
+//                 type: "refresh_content",
+//                 content_id: "computers_list",
+//                 content: net.computers
+//             }));
+//             connection.socket.send(JSON.stringify({
+//                 type: "data_table_content",
+//                 source: "computers",
+//                 content: net.computers
+//             }));
+//         }
+//     }
+// }
 
-export function notifyWebOfNewPackageData(networkId) {
-    for (var connection of webConnections) {
-        if (connection.networkId == networkId) {
-            var content = getPackagesOfNetwork(networkId);
+// export function notifyWebOfNewPackageData(networkId) {
+//     for (var connection of webConnections) {
+//         if (connection.networkId == networkId) {
+//             var content = getPackagesOfNetwork(networkId);
             
-            connection.socket.send(JSON.stringify({
-                type: "refresh_content",
-                content_id: "packages_list",
-                content: content
-            }));
-            connection.socket.send(JSON.stringify({
-                type: "data_table_content",
-                source: "packages",
-                content: content
-            }));
-        }
-    }
-}
-export function notifyWebOfNewClientSourceData(networkId, clientSourceConnections) {
-    var connectionIds = [];
-    for (var connection of clientSourceConnections) {
-        connectionIds.push(connection.sourceId);
-    }
-    for (var connection of webConnections) {
-        if (connection.networkId == networkId) {
-            connection.socket.send(JSON.stringify({
-                type: "refresh_content",
-                content_id: "client_sources_list",
-                content: connectionIds
-            }));
-        }
-    }
-}
+//             connection.socket.send(JSON.stringify({
+//                 type: "refresh_content",
+//                 content_id: "packages_list",
+//                 content: content
+//             }));
+//             connection.socket.send(JSON.stringify({
+//                 type: "data_table_content",
+//                 source: "packages",
+//                 content: content
+//             }));
+//         }
+//     }
+// }
+
+// export function notifyWebOfNewClientSourceData(networkId, clientSourceConnections) {
+//     var connectionIds = [];
+//     for (var connection of clientSourceConnections) {
+//         connectionIds.push(connection.sourceId);
+//     }
+//     for (var connection of webConnections) {
+//         if (connection.networkId == networkId) {
+//             connection.socket.send(JSON.stringify({
+//                 type: "refresh_content",
+//                 content_id: "client_sources_list",
+//                 content: connectionIds
+//             }));
+//         }
+//     }
+// }
 
 export function sendToComputerSocket(networkId, computerId, data) {
     for (var connection of computerConnections) {
@@ -105,7 +107,7 @@ export function sendToComputerSocket(networkId, computerId, data) {
 }
 
 export function getClientSourcesOfNetwork(networkId) {
-    return clientSourceConnections.filter(connection => connection.networkId == networkId).map(connection => connection.sourceId);
+    return clientSourceConnections.filter(connection => connection.net.networkId == networkId).map(connection => connection.sourceId);
 }
 
 var nextRequestId = 0;
@@ -202,9 +204,10 @@ export function applySockets(app) {
         console.log("New connection by client source");
         var cookie = req.get("COOKIE");
         var networkToken = /authToken=([^;]+)/.exec(cookie)[1];
-        var networkId = getNetworkForToken(networkToken);
+        var net = getSyncedNetwork(networkToken);
 
-        if (networkId == null) {
+        if (net == null) {
+            console.log("With invalid token", sourceId);
             ws.send("Invalid token")
             ws.close()
             return;
@@ -215,16 +218,16 @@ export function applySockets(app) {
         var connection = {
             socket: ws,
             networkToken: networkToken,
-            networkId: networkId,
+            net: net,
             sourceId: sourceId
         };
 
-        console.log("(With id", sourceId, ")");
+        console.log("Assigned source id", sourceId);
         ws.send("Your id is " + sourceId);//Note that the client has special formatting for this text (bad idea i know icba to fix rn)
 
         clientSourceConnections.push(connection);
-        notifyWebOfNewClientSourceData(networkId, clientSourceConnections);
-        
+        net.setChanged(SYNCED_SOURCES);
+
         ws.on('message', function (message) {
             var data = JSON.parse(message);
             if (data.type == "request_response") {
@@ -243,7 +246,7 @@ export function applySockets(app) {
             console.log("Client connection closed");
             clientSourceConnections.splice(clientSourceConnections.indexOf(ws), 1);
             delete sourceCodesInUse[sourceId];
-            notifyWebOfNewClientSourceData(networkId, clientSourceConnections);
+            net.setChanged(SYNCED_SOURCES);
         });
     });
 }

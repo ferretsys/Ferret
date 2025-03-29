@@ -136,7 +136,7 @@ export async function handleEmit(connection, token, endpoint, body) {
     }
     if (endpoint == "set_computer_package") {
         net.computers[body.computer_id].package = body.package;
-        net.setChanged(SYNCED_PACKAGES);
+        net.setChanged(SYNCED_COMPUTERS);
         return;
     }
     if (endpoint == "set_computer_source") {
