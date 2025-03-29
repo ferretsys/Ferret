@@ -27,6 +27,6 @@ jobs:
             cd run
             git log --pretty=format:'%h' -n 1 > hash.txt
             cd ..
-            nohup node server > run/latest.log 2>&1 &
+            nohup node main > run/latest.log 2>&1 &
             echo "Started server, action complete!"
             exit
