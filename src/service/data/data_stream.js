@@ -66,6 +66,23 @@ export function onDataStreamEntry(net, streamName, entry) {
     })));
 }
 
+export function addConnectionToDataStream(net, streamName, connection) {
+    var dataStream = getOrCreateDataStream(net, streamName);
+    connection.addOnDisconnect(() => {
+        dataStream.subscribers = dataStream.subscribers.filter(subscriber => subscriber != connection);
+        console.log("Removed subscriber from stream", streamName, "for network", net.networkId);
+        net.setChanged(DATA_SOURCES);
+    });
+    connection.socket.send(JSON.stringify({
+        type: "data_stream_format",
+        data_stream_name: streamName,
+        format: dataStream.format,
+    }));
+    dataStream.subscribers.push(connection);
+    net.setChanged(DATA_SOURCES);
+}
+
+
 export function handleStatisticsCallFromConnection(net, connection, message) {
     if (message.action == "subscribe") {
         var streamName = message.data_stream_name;
@@ -80,6 +97,7 @@ export function handleStatisticsCallFromConnection(net, connection, message) {
             data_stream_name: streamName,
             format: dataStream.format,
         }));
+        console.log("Added subscriber to stream", streamName, "for network", net.networkId);
     } else if (message.action == "unsubscribe") {
         var dataStream = getDataStreamsForNetwork(net);
         if (dataStream) {
@@ -87,8 +105,9 @@ export function handleStatisticsCallFromConnection(net, connection, message) {
         } else {
             sendServiceCallFail(net, connection, "No stream found for unsubscription.");
             return;
-        }
+    }
         net.setChanged(DATA_SOURCES);
+        console.log("Removed subscriber to stream", streamName, "for network", net.networkId);
     } else if (message.action == "new_entry") {
         var streamName = message.data_stream_name;
         if (!streamName) {
@@ -112,15 +131,4 @@ export function handleStatisticsCallFromConnection(net, connection, message) {
     } else {
         sendServiceCallFail(net, connection, "Unknown action for statistics call: " + message.action);
     }
-}
-
-export function addConnectionToDataStream(net, streamName, connection) {
-    var dataStream = getOrCreateDataStream(net, streamName);
-    connection.addOnDisconnect(() => {
-        dataStream.subscribers = dataStream.subscribers.filter(subscriber => subscriber != connection);
-        console.log("Removed subscriber from stream", streamName, "for network", net.networkId);
-        net.setChanged(DATA_SOURCES);
-    });
-    dataStream.subscribers.push(connection);
-    net.setChanged(DATA_SOURCES);
 }
