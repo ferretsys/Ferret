@@ -86,16 +86,18 @@ local function checkForNetworkEvents(event)
 end
 
 function RunWebsocketThread()
-    local lastTimerId = os.startTimer(30) -- Used for tryForWebSocketReconnection
+    local lastTimerId = os.startTimer(5) -- Used for tryForWebSocketReconnection
     while true do
         local eventData = {os.pullEvent()}
         if resyncFerretState ~= nil and eventData[1] == "timer" and eventData[1] == resyncFerretState then
             SendFerretState(lastFerretState)
+            resyncFerretState = nil
+            print("Sycned state")
         end
         if eventData[1] == "timer" and eventData[1] == lastTimerId then
             checkForNetworkEvents(eventData)
             SendFerretState(lastFerretState)
-            lastTimerId = os.startTimer(30)
+            lastTimerId = os.startTimer(5)
         end
         checkForNetworkEvents(eventData)
     end
