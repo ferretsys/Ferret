@@ -61,7 +61,11 @@ export function applyComputerSockets(app) {
                 console.log("Recived malformed computer message");
             }
 
-            if (message.type == "computer_notify_ferret_state" && parseInt(message.order) > connection.localFerretStateOrderstamp) {
+            if (message.type == "computer_notify_ferret_state") {
+                if (connection.localFerretStateOrderstamp > message.order) {
+                    console.log("Received old state from computer, ignoring")
+                    return;
+                }
                 net.computers[computerId].ferretState = message.state
                 net.setChanged(SYNCED_COMPUTERS);
                 connection.localFerretStateOrderstamp = parseInt(message.order)
