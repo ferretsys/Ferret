@@ -18,6 +18,7 @@
   --status-idle_no_startup: rgb(241, 162, 59);
   --status-package_error: rgb(226, 84, 84);
   --status-running: rgb(96, 226, 84);
+  --status-reconnected: rgb(84, 226, 131);
   
   --status-shutdown: rgb(109, 109, 113);
 

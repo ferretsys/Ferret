@@ -27,6 +27,10 @@ local function tryForWebSocketReconnection()
         else
             print("Connected to websocket host " .. socketHost)
             SocketTimeOfLastSignal = os.clock()
+            SendRawToServer({
+                type="computer_notify_state",
+                state="reconnected"
+            });
         end
     end
 end
