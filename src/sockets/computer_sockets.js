@@ -67,6 +67,7 @@ export function applyComputerSockets(app) {
                     return;
                 }
                 net.computers[computerId].ferretState = message.state
+                console.log("Computer", computerId, "in state", message.state);
                 net.setChanged(SYNCED_COMPUTERS);
                 connection.localFerretStateOrderstamp = parseInt(message.order)
             }
