@@ -10,7 +10,12 @@ var table = new DataTable([
     new DataTableCell("Remove", (cell, entry, data) => {
         return cell.button("Remove", () => {
             tryRemoveDataSource(entry.key)
-        }, "remove_package_button_" + entry.key.replaceAll(".", "_"));
+        }, "remove_data_source_button_" + entry.key.replaceAll(".", "_"));
+    }),
+    new DataTableCell("Open", (cell, entry, data) => {
+        return cell.button("Open", () => {
+            window.open(`./data.html?data_source=${entry.key}`, '_blank', 'width=800,height=600');
+        });
     }),
 ], ["data_sources"], "data_sources");
 

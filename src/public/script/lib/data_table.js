@@ -28,6 +28,17 @@ class DataTableCell {
         return indicator;
     }
 
+    inlineStatusIndicator(statusName, tooltip) {
+        var indicator = document.createElement("div");
+        indicator.classList.add("color-indicator-cell", "inline-status-indicator");
+        indicator.style.backgroundColor = `var(--status-${statusName})`;
+        if (tooltip) {
+            tippy(indicator, {
+                content: tooltip,
+            });
+        }
+        return indicator;
+    }
     heartbeatIndicator(group, id) {
         var indicator = this.statusIndicator("none");
         indicator.classList.add("heartbeat-indicator");
@@ -106,6 +117,13 @@ class DataTableCell {
         button.innerText = text;
         button.addEventListener("click", onclick);
         return button;
+    }
+
+    createElement(type, className, id) {
+        var element = document.createElement(type);
+        if (id) element.id = id;
+        if (className) element.classList.add(className);
+        return element;
     }
 
 }

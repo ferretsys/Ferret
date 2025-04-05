@@ -6,7 +6,7 @@ if (!dataSourceFromUrl) {
     throw new Error("No data source specified in URL!");
 }
 
-var dataSocket = new WebSocket((window.location.protocol == "https:" ? "wss:" : "ws:")  + window.location.host + "/socket/data_source?data_source=" + dataSourceFromUrl);
+var dataSocket = new WebSocket((window.location.protocol == "https:" ? "wss:" : "ws:") + window.location.host + "/socket/data_source?data_source=" + dataSourceFromUrl);
 
 dataSocket.addEventListener("open", function (event) {
     console.log("Connected to data source: " + dataSourceFromUrl);
@@ -20,73 +20,51 @@ var format = {
 var graph = null;
 var timestamp = null;
 
+var currentHandler = null;
+
 function rebuildDataElementForFormat(format) {
     if (format.type == "text") {
         return;
-    } else if (format.type == "line_graph") {
-        var canvasContainer = document.createElement("div");
-        canvasContainer.id = "data_graph_container";
-        canvasContainer.style.width = "100%";
-        canvasContainer.style.height = "90vh";
-
-        var canvas = document.createElement("canvas");
-
-        canvas.id = "data_graph_canvas";
-        dataContainer.innerText = "";
-        
-        canvasContainer.appendChild(canvas);
-        dataContainer.appendChild(canvasContainer);
-
-        graph = new Chart(canvas, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    pointHitRadius: 40,
-                    pointRadius: 0,
-                    borderWidth: 5,
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        enabled: false
-                    }
-                }
-            }
-        });
-        timestamp = document.createElement("span");
-        timestamp.id = "data_graph_timestamp";
-        timestamp.innerText = "Timestamp: ?";
-        dataContainer.appendChild(timestamp);
     }
+    if (currentHandler == null) {
+        var scriptPath = "./script/page/data/handler/" + format.type.replaceAll(".", "/") + ".js";
+        fetch(scriptPath)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to load handler script: " + scriptPath);
+                }
+                return response.text();
+            })
+            .then(scriptContent => {
+                try {
+                    currentHandler = eval("()=>{" + scriptContent + "}")();
+                    console.log("Handler script loaded and executed: " + scriptPath);
+                    if (typeof currentHandler === "object" && typeof currentHandler.update === "function") {
+                        console.log("Valid handler loaded with 'update' function.");
+                    } else {
+                        console.error("The evaluated script did not return a valid handler with an 'update' function: " + scriptPath);
+                        currentHandler = null;
+                    }
+                } catch (e) {
+                    console.error("Error during script evaluation: ", e);
+                    currentHandler = null;
+                }
+            })
+            .catch(error => {
+                console.error("Error loading handler script: ", error);
+            });
+  }
 }
 function updateDataElement(data, time) {
     if (format.type == "text") {
         dataContainer.innerText = data;
-    } else if (format.type == "line_graph") {
-        if (graph == null) {
-            console.error("Graph is not initialized!");
-            return;
+    }
+    if (currentHandler != null) {
+        if (currentHandler.update != null) {
+            currentHandler.update(data, time);
+        } else {
+            console.error("Handler does not have an 'update' function: ", currentHandler);
         }
-        graph.data.labels = data.labels || Object.keys(data.data);
-        graph.data.datasets[0].data = data.data;
-        graph.update();
-        if (timestamp == null) {
-            console.error("Timestamp is not initialized!");
-            return;
-        }
-        timestamp.innerText = "Timestamp: " + time;
     }
 }
 

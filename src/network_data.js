@@ -28,7 +28,7 @@ export const dataRequestHandlers = {
     "data_sources": DATA_SOURCES,
 }
 
-class SyncedNetwork {
+export class SyncedNetwork {
     constructor(networkConfig, computerData, networkId) {
         this.config = networkConfig;
         this.computers = computerData;
@@ -92,6 +92,7 @@ for (var networkId of Object.keys(networkTokens)) {
     for (var networkComputer in networkComputersFile[networkId]) {
         networkComputersFile[networkId][networkComputer].connectedState = false;
         networkComputersFile[networkId][networkComputer].ferretState = null;
+        networkComputersFile[networkId][networkComputer].substatus = {};
     }
 }
 createNetworksForFileData();

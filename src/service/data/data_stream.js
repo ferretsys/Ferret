@@ -1,4 +1,5 @@
-import { DATA_SOURCES } from "../../network_data.js";
+import { DATA_SOURCES, SyncedNetwork } from "../../network_data.js";
+import { ComputerConnection } from "../../sockets/computer_sockets.js";
 import { sendServiceCallFail } from "../service_calls.js";
 
 export const DATA_STREAMS_OF_NETWORKS = {};
@@ -23,7 +24,7 @@ class DataStream {
 // {
 //     type: "service_call",
 //     endpoint: "data_stream",
-//     action: "new_entry",
+//     action: "new_data",
 //     data_stream_name: "test_stream",
 //     entry: "test"
 // }
@@ -37,6 +38,7 @@ export function getOrCreateDataStream(net, streamName) {
         DATA_STREAMS_OF_NETWORKS[net.networkId] = {};
     }
     if (!DATA_STREAMS_OF_NETWORKS[net.networkId][streamName]) {
+        console.log("Data stream not found, creating new one", streamName, "for network", net.networkId);
         DATA_STREAMS_OF_NETWORKS[net.networkId][streamName] = new DataStream(streamName);
     }
     return DATA_STREAMS_OF_NETWORKS[net.networkId][streamName];
@@ -52,6 +54,7 @@ export function getDataStream(net, streamName) {
 export function onDataStreamEntry(net, streamName, entry) {
     var dataStream = getDataStreamsForNetwork(net)[streamName];
     if (!dataStream) {
+        console.log("Data stream not found, creating new one", streamName, "for network", net.networkId);
         dataStream = new DataStream(streamName);
         if (DATA_STREAMS_OF_NETWORKS[net] == null) {
             DATA_STREAMS_OF_NETWORKS[net.networkId] = {};
@@ -82,7 +85,16 @@ export function addConnectionToDataStream(net, streamName, connection) {
     net.setChanged(DATA_SOURCES);
 }
 
+export function handleDataStreamSocketMessage(net, connection, dataStream, message) {
+    if (message.type == "new_data") {
+        onDataStreamEntry(net, dataStream, message.entry);
+    }
+} 
 
+/**
+ * @param {SyncedNetwork} net
+ * @param {ComputerConnection} computerConnection 
+ * */
 export function handleStatisticsCallFromConnection(net, connection, message) {
     if (message.action == "subscribe") {
         var streamName = message.data_stream_name;
@@ -91,12 +103,6 @@ export function handleStatisticsCallFromConnection(net, connection, message) {
             return;
         }
         addConnectionToDataStream(net, streamName, connection);
-        var dataStream = getOrCreateDataStream(net, streamName);
-        connection.socket.send(JSON.stringify({
-            type: "data_stream_format",
-            data_stream_name: streamName,
-            format: dataStream.format,
-        }));
         console.log("Added subscriber to stream", streamName, "for network", net.networkId);
     } else if (message.action == "unsubscribe") {
         var dataStream = getDataStreamsForNetwork(net);
@@ -108,7 +114,7 @@ export function handleStatisticsCallFromConnection(net, connection, message) {
     }
         net.setChanged(DATA_SOURCES);
         console.log("Removed subscriber to stream", streamName, "for network", net.networkId);
-    } else if (message.action == "new_entry") {
+    } else if (message.action == "new_data") {
         var streamName = message.data_stream_name;
         if (!streamName) {
             sendServiceCallFail(net, connection, "No stream name provided for subscription.");

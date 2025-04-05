@@ -15,6 +15,31 @@ var table = new DataTable([
     new DataTableCell("Fe", (cell, entry, data) => {
         return cell.statusIndicator(entry.ferretState || "none", entry.ferretState);
     }),
+    new DataTableCell("Substatus", (cell, entry, data) => {
+        console.log("Substatus", entry.substatus);
+        var container = cell.createElement("div", "substatus-container");
+        for (var substatusId in entry.substatus) {
+            var substatus = entry.substatus[substatusId];
+            var substatusEntry = cell.createElement("div", "substatus-entry");
+            
+            var substatusLabel = cell.createElement("span", "substatus-label");
+            var substatusNameLabel = cell.createElement("span", "substatus-name-label");
+            substatusNameLabel.innerText = substatusId;
+            substatusLabel.appendChild(substatusNameLabel);
+            
+            var substatusNameLabel = cell.createElement("span", "substatus-id-label");
+            substatusNameLabel.innerText = substatusId;
+            substatusLabel.appendChild(substatusNameLabel);
+
+            substatusEntry.appendChild(substatusLabel);
+
+            var substatusValue = cell.inlineStatusIndicator(substatus.style || "none", substatus.value || "none");
+            substatusEntry.appendChild(substatusValue);
+
+            container.appendChild(substatusEntry);
+        }
+        return container;
+    }),
     new DataTableCell("Source", (cell, entry, data) => {
         return cell.selectionList(["default", ...(data.sources || [])], entry.source, (value) => {
             emitServerSocketApi("set_computer_source", {

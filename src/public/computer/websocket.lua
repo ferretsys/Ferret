@@ -1,5 +1,5 @@
 local socketHeaders = {
-    COOKIE="authToken=" .. Token .. ";" .. "computerid=" .. os.getComputerID() .. ";"
+    COOKIE = "authToken=" .. Token .. ";" .. "computerid=" .. os.getComputerID() .. ";"
 }
 local socketHost = WsHost .. "/socket/computer";
 local socket = http.websocket(socketHost, socketHeaders)
@@ -37,7 +37,13 @@ local function tryForWebSocketReconnection()
 end
 
 local function endsWith(text, with)
-    return string.sub(text, string.len(text)-string.len(with) + 1, string.len(text))==with
+    return string.sub(text, string.len(text) - string.len(with) + 1, string.len(text)) == with
+end
+
+local handlersByType = {}
+
+function AddWebsocketHandlerOfType(type, handler)
+    handlersByType[type] = handler
 end
 
 local function checkForNetworkEvents(event)
@@ -45,22 +51,22 @@ local function checkForNetworkEvents(event)
         tryForWebSocketReconnection()
         return
     end
-    
+
     if event[1] == "websocket_closed" then
         IsWebSocketValid = false
         print("Websocket connection closed")
         tryForWebSocketReconnection()
         SocketTimeOfLastReattempt = os.clock()
     end
-    
+
     local eventId = event[1]
     if eventId ~= "websocket_message" then
         return
     end
     SocketTimeOfLastSignal = os.clock()
-    
+
     local message = event[3]
-    print("Recived", message)
+    -- print("Recived", message)
 
     local data = textutils.unserializeJSON(message);
     if data.type == "action" then
@@ -83,12 +89,22 @@ local function checkForNetworkEvents(event)
             shell.run("reboot")
         end
     end
+    local handler = handlersByType[data.type]
+    if handler then
+        local success, err = pcall(handler, data)
+        if not success then
+            print("Error in handler for type: " .. data.type .. " - " .. err)
+            SendFerretState("package_network_error")
+        end
+    else
+        print("No handler for type: " .. data.type .. " with data: " .. message)
+    end
 end
 
 function RunWebsocketThread()
     local lastTimerId = os.startTimer(30) -- Used for causing a reconnection
     while true do
-        local eventData = {os.pullEvent()}
+        local eventData = { os.pullEvent() }
         if resyncFerretState ~= nil and eventData[1] == "timer" and eventData[2] == resyncFerretState then
             print("Sending new state")
             SendFerretState(lastFerretState)
@@ -97,8 +113,9 @@ function RunWebsocketThread()
         if eventData[1] == "timer" and eventData[2] == lastTimerId then
             checkForNetworkEvents(eventData)
             lastTimerId = os.startTimer(30)
+        else
+            checkForNetworkEvents(eventData)
         end
-        checkForNetworkEvents(eventData)
     end
 end
 
@@ -115,8 +132,8 @@ function SendFerretState(state)
     end
     print("Sending ferret state", state)
     SendRawToServer({
-        type="computer_notify_ferret_state",
-        state=state,
-        order=order
+        type = "computer_notify_ferret_state",
+        state = state,
+        order = order
     });
 end

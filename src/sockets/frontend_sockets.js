@@ -3,7 +3,7 @@ import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } f
 import { handleEmit, handleRequest } from "../server_requests.js";
 import { applyComputerSockets } from "./computer_sockets.js";
 import { Connection } from "./connection.js";
-import { addConnectionToDataStream } from "../service/data/data_stream.js";
+import { addConnectionToDataStream, handleDataStreamSocketMessage } from "../service/data/data_stream.js";
 
 export var computerConnections = [];
 export var webConnections = [];
@@ -175,8 +175,14 @@ export function applySockets(app) {
         var connection = new Connection(ws);
         addConnectionToDataStream(net, dataStream, connection)
 
+        ws.on('message', function (message) {
+            var data = JSON.parse(message);
+            handleDataStreamSocketMessage(net, connection, dataStream, data);
+        });
+
         ws.on('close', function () {
             console.log("Data stream display connection closed");
+            connection.onDisconnect();
         });
     });
     

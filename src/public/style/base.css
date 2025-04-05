@@ -16,7 +16,9 @@
   --status-heartbeat: rgb(111, 214, 255);
 
   --status-idle_no_startup: rgb(241, 162, 59);
+  --status-warning: rgb(241, 162, 59);
   --status-package_error: rgb(226, 84, 84);
+  --status-package_network_error: rgb(238, 133, 114);
   --status-running: rgb(96, 226, 84);
   --status-reconnected: rgb(84, 226, 131);
   

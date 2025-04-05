@@ -4,7 +4,7 @@ import { handleServiceCallFromComputer } from "../service/service_calls.js";
 import { computerConnections, webConnections } from "./frontend_sockets.js";
 import { Connection } from "./connection.js";
 
-class ComputerConnection extends Connection {
+export class ComputerConnection extends Connection {
     constructor(ws, networkToken, networkId, computerId) {
         super(ws);
         this.networkToken = networkToken;
@@ -75,6 +75,7 @@ export function applyComputerSockets(app) {
 
         ws.on('close', function () {
             net.computers[computerId].ferretState = "shutdown";
+            net.computers[computerId].substatus = {};
             
             console.log("Computer connection closed");
             computerConnections.splice(computerConnections.indexOf(ws), 1);
