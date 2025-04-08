@@ -82,3 +82,7 @@ td {
     color: var(--text-col3);
     display: block;
 }
+
+#page_content {
+    width: 100%;
+}

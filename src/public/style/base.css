@@ -122,7 +122,6 @@ page {
 
 content {
   width: 90vw;
-  min-width: min(1000px, 100%);
 }
 
 .tippy-content {

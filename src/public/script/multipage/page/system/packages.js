@@ -5,7 +5,7 @@ var table = new DataTable([
         return cell.textLabel(entry.key);
     }),
     new DataTableCell("Files", (cell, entry, data) => {
-        return cell.textLabel(entry.files);
+        return cell.textLabel(entry.files.join(",\n"));
     }),
     new DataTableCell("Remove", (cell, entry, data) => {
         return cell.button("Remove", () => {
