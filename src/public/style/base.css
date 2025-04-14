@@ -69,16 +69,12 @@ input:focus {
   border: 2px solid var(--soft-border);
 }
 
-h1, a, button, input {
+h1, a, button, input, select {
   color: var(--text-col1);
 }
 
-a, button, input {
+a, button, input, select {
   background-color: var(--button-color);
-}
-
-button, input {
-  border: 2px solid var(--hard-border);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -89,7 +85,8 @@ h1 {
   position: relative;
 }
 
-button, input {
+button, input, select {
+  border: 2px solid var(--hard-border);
   border-radius: 0;
   font-family: unset;
   padding: 5px;

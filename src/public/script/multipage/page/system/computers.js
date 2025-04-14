@@ -16,7 +16,6 @@ var table = new DataTable([
         return cell.statusIndicator(entry.ferretState || "none", entry.ferretState);
     }),
     new DataTableCell("Substatus", (cell, entry, data) => {
-        console.log("Substatus", entry.substatus);
         var container = cell.createElement("div", "substatus-container");
         for (var substatusId in entry.substatus) {
             var substatus = entry.substatus[substatusId];

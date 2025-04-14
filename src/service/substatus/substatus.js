@@ -54,7 +54,7 @@ export function handleSubstatusCallFromComputer(net, computerConnection, message
             style: message.substatus_style,
             order: message.order,
         }
-        console.log("Substatus updated", message.substatus_id, message.substatus_label, message.substatus_style, message.order);
+        // console.log("Substatus updated", message.substatus_id, message.substatus_label, message.substatus_style, message.order);
         net.setChanged(SYNCED_COMPUTERS);
     }
 }

@@ -186,8 +186,6 @@ function addDataContentConsumer(source, consumer) {
 }
 
 setServerSocketMessageTypeHandler("data_content", (data) => {
-    console.log("Recived data table content", data);
-
     var dataSourceTarget = data.source;
     var dataContent = data.content;
     
