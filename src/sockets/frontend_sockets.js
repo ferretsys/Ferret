@@ -1,11 +1,10 @@
 import { SYNCED_SOURCES } from "../network_data.js";
 import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "../index.js";
 import { handleEmit, handleRequest } from "../server_requests.js";
-import { applyComputerSockets } from "./computer_sockets.js";
+import { applyComputerSockets, computerConnections } from "./computer_sockets.js";
 import { Connection } from "./connection.js";
 import { addConnectionToDataStream, handleDataStreamSocketMessage } from "../service/data/data_stream.js";
 
-export var computerConnections = [];
 export var webConnections = [];
 export var clientSourceConnections = [];
 
@@ -53,6 +52,7 @@ export function sendToComputerSocket(networkId, computerId, data) {
             return;
         }
     }
+    console.log("Failed to send data to computer socket", networkId, computerId, data);
 }
 
 export function getClientSourcesOfNetwork(networkId) {

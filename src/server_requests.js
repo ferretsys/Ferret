@@ -1,8 +1,9 @@
 import { DATA_SOURCES, dataRequestHandlers, SYNCED_COMPUTERS, SYNCED_PACKAGES } from "./network_data.js";
 import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./index.js";
-import { computerConnections, getClientSourcesOfNetwork, sendToComputerSocket } from "./sockets/frontend_sockets.js";
+import { sendToComputerSocket } from "./sockets/frontend_sockets.js";
 import { existsSync, readFileSync } from "fs";
-import { DATA_STREAMS_OF_NETWORKS, getDataStream, getDataStreamsForNetwork } from "./service/data/data_stream.js";
+import { DATA_STREAMS_OF_NETWORKS, getDataStream } from "./service/data/data_stream.js";
+import { computerConnections } from "./sockets/computer_sockets.js";
 
 var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt").toString() : "UNKNOWN";
 console.log("Found server hash " + serverHash);

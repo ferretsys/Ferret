@@ -1,8 +1,10 @@
 import { SYNCED_COMPUTERS } from "../network_data.js";
 import { getNetworkForToken, getSyncedNetwork, updateConnectedComputers } from "../index.js";
 import { handleServiceCallFromComputer } from "../service/service_calls.js";
-import { computerConnections, webConnections } from "./frontend_sockets.js";
+import { webConnections } from "./frontend_sockets.js";
 import { Connection } from "./connection.js";
+
+export var computerConnections = [];
 
 export class ComputerConnection extends Connection {
     constructor(ws, networkToken, networkId, computerId) {
@@ -51,10 +53,11 @@ export function applyComputerSockets(app) {
 
         ws.on('message', function(message) {
             connection.updateLastNetworkTime();
+            if (message == "hb") return;
             try {
                 message = JSON.parse(message);
             } catch (error) {
-                console.log("Recived malformed computer message");
+                console.log("Recived malformed computer message " + message);
             }
 
             if (message.type == "computer_notify_ferret_state") {
@@ -74,15 +77,24 @@ export function applyComputerSockets(app) {
         });
 
         ws.on('close', function () {
-            net.computers[computerId].ferretState = "shutdown";
-            net.computers[computerId].substatus = {};
+            if (net.computers[computerId] != null) {
+                net.computers[computerId].ferretState = "shutdown";
+                net.computers[computerId].substatus = {};
+            }
             
             console.log("Computer connection closed");
-            computerConnections.splice(computerConnections.indexOf(ws), 1);
+            computerConnections.splice(computerConnections.indexOf(connection), 1);
             
             updateConnectedComputers(net, computerConnections);
             connection.onDisconnect();
         });
+
+        for (var connection of computerConnections) {
+            if (connection.networkId == networkId && connection.computerId == computerId) {
+                console.log("Computer already connected, closing old connection")
+                connection.socket.close();
+            }
+        }
 
         var connection = new ComputerConnection(ws, networkToken, networkId, computerId);
         computerConnections.push(connection);

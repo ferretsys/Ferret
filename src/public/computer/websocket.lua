@@ -48,6 +48,7 @@ end
 
 local function checkForNetworkEvents(event)
     if not IsWebSocketValid then
+        print("Websocket is not dropped event")
         tryForWebSocketReconnection()
         return
     end
@@ -72,7 +73,6 @@ local function checkForNetworkEvents(event)
     if data.type == "action" then
         if data.action == "refresh_computer_source" then
             SendFerretState("refreshing_computer_source");
-            print("Refreshing source")
 
             shell.run("rm /src/")
             shell.run("mkdir src")
@@ -83,12 +83,14 @@ local function checkForNetworkEvents(event)
                 end
                 WriteAllFile("src/" .. fileData.name, fileData.content)
             end
+
             WriteAllFile("startup.txt", startup)
             print("Rebooting...")
             SendFerretState("rebooting")
             shell.run("reboot")
         end
     end
+
     local handler = handlersByType[data.type]
     if handler then
         local success, err = pcall(handler, data)
@@ -103,6 +105,7 @@ end
 
 function RunWebsocketThread()
     local lastTimerId = os.startTimer(30) -- Used for causing a reconnection
+    local socketHeartbeatTimerId = os.startTimer(10);
     while true do
         local eventData = { os.pullEvent() }
         if resyncFerretState ~= nil and eventData[1] == "timer" and eventData[2] == resyncFerretState then
@@ -113,6 +116,11 @@ function RunWebsocketThread()
         if eventData[1] == "timer" and eventData[2] == lastTimerId then
             checkForNetworkEvents(eventData)
             lastTimerId = os.startTimer(30)
+        elseif eventData[1] == "timer" and eventData[2] == socketHeartbeatTimerId then
+            if IsWebSocketValid then
+                socket.send("hb")
+            end
+            socketHeartbeatTimerId = os.startTimer(10)
         else
             checkForNetworkEvents(eventData)
         end
