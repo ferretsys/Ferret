@@ -5,11 +5,11 @@ import { existsSync, readFileSync } from "fs";
 import { DATA_STREAMS_OF_NETWORKS, getDataStream } from "./service/data/data_stream.js";
 import { computerConnections } from "./sockets/computer_sockets.js";
 
-var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt").toString() : "UNKNOWN";
-console.log("Found server hash " + serverHash);
+export const SERVER_HASH = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt").toString() : "UNKNOWN";
+console.log("Found server hash " + SERVER_HASH);
 
 export var serverStatistics = {
-    hash: serverHash, 
+    hash: SERVER_HASH, 
     connected_computers: 0
 };
 
