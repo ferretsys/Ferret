@@ -1,5 +1,5 @@
 import {} from "./webhost.js";//Load
-import {} from "./sockets/internal_socket.js"; //Load
+import {} from "./sockets/internal_socket_client.js"; //Load
 import { CONNECTED_COMPUTERS_CHART, networkTokens, SYNCED_COMPUTERS, syncedNetworkData } from "./network_data.js";
 import { getFileFromClientSourceForComputer } from "./sockets/frontend_sockets.js";
 import { serverStatistics } from "./server_requests.js";
