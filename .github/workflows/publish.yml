@@ -16,5 +16,5 @@ jobs:
           key: ${{ secrets.SSHKEY }}
           port: ${{ secrets.PORT }}
           script: |
-            bash rerunferret.sh
+            bash ferretupdate.sh
             exit
