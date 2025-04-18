@@ -1,11 +1,14 @@
 import { SYNCED_COMPUTERS } from "../network_data.js";
 import { getNetworkForToken, getSyncedNetwork, updateConnectedComputers } from "../index.js";
-import { handleServiceCallFromComputer } from "../service/serviceCalls.js";
-import { computerConnections, webConnections } from "./frontend_sockets.js";
+import { handleServiceCallFromComputer } from "../service/service_calls.js";
+import { webConnections } from "./frontend_sockets.js";
+import { Connection } from "./connection.js";
 
-class ComputerConnection {
+export var computerConnections = [];
+
+export class ComputerConnection extends Connection {
     constructor(ws, networkToken, networkId, computerId) {
-        this.socket = ws;
+        super(ws);
         this.networkToken = networkToken;
         this.networkId = networkId;
         this.computerId = computerId;
@@ -34,6 +37,7 @@ class ComputerConnection {
 export function applyComputerSockets(app) {
     app.ws("/socket/computer", function (ws, req) {
         console.log("New connection by computer");
+        
         var cookie = req.get("COOKIE");
         var networkToken = /authToken=([^;]+)/.exec(cookie)[1];
         var computerId = /computerid=([^;]+)/.exec(cookie)[1];
@@ -47,22 +51,22 @@ export function applyComputerSockets(app) {
             return;
         }
 
-        var connection = new ComputerConnection(ws, networkToken, networkId, computerId);
-        computerConnections.push(connection);
-        connection.updateLastNetworkTime();
-
-        updateConnectedComputers(net, computerConnections);
-
         ws.on('message', function(message) {
             connection.updateLastNetworkTime();
+            if (message == "hb") return;
             try {
                 message = JSON.parse(message);
             } catch (error) {
-                console.log("Recived malformed computer message");
+                console.log("Recived malformed computer message " + message);
             }
 
-            if (message.type == "computer_notify_ferret_state" && parseInt(message.order) > connection.localFerretStateOrderstamp) {
+            if (message.type == "computer_notify_ferret_state") {
+                if (connection.localFerretStateOrderstamp > message.order) {
+                    console.log("Received old state from computer, ignoring")
+                    return;
+                }
                 net.computers[computerId].ferretState = message.state
+                console.log("Computer", computerId, "in state", message.state);
                 net.setChanged(SYNCED_COMPUTERS);
                 connection.localFerretStateOrderstamp = parseInt(message.order)
             }
@@ -73,12 +77,29 @@ export function applyComputerSockets(app) {
         });
 
         ws.on('close', function () {
-            net.computers[computerId].ferretState = "shutdown";
+            if (net.computers[computerId] != null) {
+                net.computers[computerId].ferretState = "shutdown";
+                net.computers[computerId].substatus = {};
+            }
             
             console.log("Computer connection closed");
-            computerConnections.splice(computerConnections.indexOf(ws), 1);
+            computerConnections.splice(computerConnections.indexOf(connection), 1);
             
             updateConnectedComputers(net, computerConnections);
+            connection.onDisconnect();
         });
+
+        for (var connection of computerConnections) {
+            if (connection.networkId == networkId && connection.computerId == computerId) {
+                console.log("Computer already connected, closing old connection")
+                connection.socket.close();
+            }
+        }
+
+        var connection = new ComputerConnection(ws, networkToken, networkId, computerId);
+        computerConnections.push(connection);
+        connection.updateLastNetworkTime();
+
+        updateConnectedComputers(net, computerConnections);
     });
 }

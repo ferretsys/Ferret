@@ -1,9 +1,10 @@
 import { SYNCED_SOURCES } from "../network_data.js";
 import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "../index.js";
 import { handleEmit, handleRequest } from "../server_requests.js";
-import { applyComputerSockets } from "./computer_sockets.js";
+import { applyComputerSockets, computerConnections } from "./computer_sockets.js";
+import { Connection } from "./connection.js";
+import { addConnectionToDataStream, handleDataStreamSocketMessage } from "../service/data/data_stream.js";
 
-export var computerConnections = [];
 export var webConnections = [];
 export var clientSourceConnections = [];
 
@@ -39,8 +40,8 @@ async function handleClientSourceSocketMessage(connection, data) {
                 }
             }
         }
+        console.log("Reloaded", reloadedCount, "computers on", connection.sourceId);
     }
-    console.log("Reloaded", reloadedCount, "computers on", connection.sourceId);
 }
 
 export function sendToComputerSocket(networkId, computerId, data) {
@@ -51,6 +52,7 @@ export function sendToComputerSocket(networkId, computerId, data) {
             return;
         }
     }
+    console.log("Failed to send data to computer socket", networkId, computerId, data);
 }
 
 export function getClientSourcesOfNetwork(networkId) {
@@ -133,9 +135,9 @@ export function applySockets(app) {
             socket: ws,
             networkToken: networkToken,
             networkId: networkId,
-            net: net
+            net: net,
         };
-
+    
         webConnections.push(connection);
 
         ws.on('message', function (message) {
@@ -143,7 +145,44 @@ export function applySockets(app) {
         });
         ws.on('close', function () {
             console.log("Web connection closed");
-            webConnections.splice(webConnections.indexOf(ws), 1)
+            webConnections.splice(webConnections.indexOf(ws), 1);
+        });
+    });
+
+    
+    app.ws("/socket/data_source", function (ws, req) {
+        console.log("New connection by data source display");
+        var cookie = req.get("COOKIE");
+        var networkToken = /authToken=([^;]+)/.exec(cookie)[1];
+        var networkId = getNetworkForToken(networkToken);
+        var net = getSyncedNetwork(networkToken);
+
+        var dataStream = req.query.data_source;
+        if (dataStream == null) {
+            console.log("No source id provided for data stream display connection");
+            ws.send("No source id provided")
+            ws.close()
+            return;
+        }
+
+        if (networkId == null) {
+            console.log("Rejected data stream display connection");
+            ws.send("Invalid token")
+            ws.close()
+            return;
+        }
+        
+        var connection = new Connection(ws);
+        addConnectionToDataStream(net, dataStream, connection)
+
+        ws.on('message', function (message) {
+            var data = JSON.parse(message);
+            handleDataStreamSocketMessage(net, connection, dataStream, data);
+        });
+
+        ws.on('close', function () {
+            console.log("Data stream display connection closed");
+            connection.onDisconnect();
         });
     });
     
@@ -166,6 +205,7 @@ export function applySockets(app) {
             socket: ws,
             networkToken: networkToken,
             net: net,
+            networkId: net.networkId,
             sourceId: sourceId
         };
 

@@ -28,6 +28,17 @@ class DataTableCell {
         return indicator;
     }
 
+    inlineStatusIndicator(statusName, tooltip) {
+        var indicator = document.createElement("div");
+        indicator.classList.add("color-indicator-cell", "inline-status-indicator");
+        indicator.style.backgroundColor = `var(--status-${statusName})`;
+        if (tooltip) {
+            tippy(indicator, {
+                content: tooltip,
+            });
+        }
+        return indicator;
+    }
     heartbeatIndicator(group, id) {
         var indicator = this.statusIndicator("none");
         indicator.classList.add("heartbeat-indicator");
@@ -108,6 +119,13 @@ class DataTableCell {
         return button;
     }
 
+    createElement(type, className, id) {
+        var element = document.createElement(type);
+        if (id) element.id = id;
+        if (className) element.classList.add(className);
+        return element;
+    }
+
 }
 
 class DataTable {
@@ -168,8 +186,6 @@ function addDataContentConsumer(source, consumer) {
 }
 
 setServerSocketMessageTypeHandler("data_content", (data) => {
-    console.log("Recived data table content", data);
-
     var dataSourceTarget = data.source;
     var dataContent = data.content;
     
@@ -198,7 +214,7 @@ function animateHeartbeat(element) {
 }
 
 setServerSocketMessageTypeHandler("heartbeat_tick", (data) => {
-    console.log("Recived data heartbeat content", data);
+    // console.log("Recived data heartbeat content", data);
     heartbeats["heartbeat-" + data.group + "-" + data.id] = Date.now();
     for (var element of document.getElementsByClassName("heartbeat-" + data.group + "-" + data.id)) {
         animateHeartbeat(element);

@@ -24,6 +24,14 @@
     transform: translate(-50%, 0%);
 }
 
+.inline-status-indicator {
+    position: relative;
+    left: 0;
+    transform: none;
+    display: inline-block;
+    margin-left: 5px;
+}
+
 content {
     display: flex;
     flex-direction: row;
@@ -50,4 +58,31 @@ content {
 
 .install-script-container {
     text-align: center;
+}
+
+.substatus-entry {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.substatus-label {
+    font-size: 1em;
+    color: var(--text-col3);
+}
+
+td {
+    vertical-align: top;
+}
+
+.substatus-id-label {
+    font-size: 0.6em;
+    color: var(--text-col3);
+    display: block;
+}
+
+#page_content {
+    width: 100%;
 }

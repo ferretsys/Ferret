@@ -1,7 +1,9 @@
-import { dataRequestHandlers, SYNCED_COMPUTERS, SYNCED_PACKAGES } from "./network_data.js";
+import { DATA_SOURCES, dataRequestHandlers, SYNCED_COMPUTERS, SYNCED_PACKAGES } from "./network_data.js";
 import { getFilesFromSourceForComputer, getNetworkForToken, getSyncedNetwork } from "./index.js";
-import { getClientSourcesOfNetwork, sendToComputerSocket } from "./sockets/frontend_sockets.js";
+import { sendToComputerSocket } from "./sockets/frontend_sockets.js";
 import { existsSync, readFileSync } from "fs";
+import { DATA_STREAMS_OF_NETWORKS, getDataStream } from "./service/data/data_stream.js";
+import { computerConnections } from "./sockets/computer_sockets.js";
 
 var serverHash = existsSync("./run/hash.txt") ? readFileSync("./run/hash.txt").toString() : "UNKNOWN";
 console.log("Found server hash " + serverHash);
@@ -60,7 +62,7 @@ export async function handleRequest(token, endpoint, body) {
     } else if (endpoint == "remove_computer") {
         var computerId = body.computer_id;
 
-        var computers = getComputersOfNetwork(networkId);
+        var computers = net.computers;
         if (!computers[computerId]) return {result: "Computer with name doesen't exist!"};
 
         if (computers[computerId].connectedState) return {result: "Computer must be disconnected!"};
@@ -68,6 +70,37 @@ export async function handleRequest(token, endpoint, body) {
         delete net.computers[computerId];
         net.setChanged(SYNCED_COMPUTERS);
         return {result: "Removed successfully", silent: true};
+    } else if (endpoint == "remove_data_source") {
+        var sourceName = body.name;
+        var source = getDataStream(net, sourceName);
+        if (!source) return {result: "Source with name doesen't exist!"};
+
+        source.subscribers.forEach(subscriber => {
+            subscriber.socket.send(JSON.stringify({
+                type: "data_stream_disconnected",
+                data_stream_name: sourceName
+            }));
+        })
+        delete DATA_STREAMS_OF_NETWORKS[net.networkId][sourceName];
+        net.setChanged(DATA_SOURCES);
+        return {result: "Removed successfully", silent: true};
+    } else if (endpoint == "kick_computer") {
+        var computerId = body.computer_id;
+
+        var computers = net.computers;
+        if (!computers[computerId]) return {result: "Computer with name doesen't exist!"};
+
+        if (!computers[computerId].connectedState) return {result: "Computer must be connected!"};
+
+        for (var connection of computerConnections) {
+            if (connection.networkId == networkId && connection.computerId == computerId) {
+                connection.socket.close();
+                return;
+            }
+        }
+
+        net.setChanged(SYNCED_COMPUTERS);
+        return {result: "Kicked successfully", silent: true};
     } else if (endpoint == "refresh_computer_source") {
         if (!net.computers[body.computer_id].connectedState) {   
             return { result: "Failed to update, computer is not connected!" }
