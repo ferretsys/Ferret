@@ -10,7 +10,7 @@ import { existsSync, readFileSync } from "fs";
 const app = express();
 expressWs(app);
 
-const PORT = 80;
+const PORT = 81;
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'public');
 
