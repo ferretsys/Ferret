@@ -48,7 +48,6 @@ end
 
 local function checkForNetworkEvents(event)
     if not IsWebSocketValid then
-        print("Websocket is not dropped event")
         tryForWebSocketReconnection()
         return
     end
