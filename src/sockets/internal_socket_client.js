@@ -101,9 +101,9 @@ function attemptRecconection() {
     setTimeout(() => {
         reconnectionAttempts++;
         if (reconnectionAttempts == 2) {
-            console.error('Failed to reconnect after 2 attempts, silencing attempts.');
+            console.error(`(${reconnectionAttempts}) Failed to reconnect after 2 attempts, silencing attempts.`);
         } else if (reconnectionAttempts < 2) {
-            console.log('Reconnecting to WebSocket server...');
+            console.log(`(${reconnectionAttempts}) Reconnecting to WebSocket server...`);
         }
         const newSocket = new WebSocket('ws://localhost:83');
         buildConnection(newSocket);
