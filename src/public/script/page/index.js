@@ -1,4 +1,3 @@
-
 function updateStats() {
     callServerSocketApi("get_server_infos").then((data) => {
         document.getElementById("network_id").innerText = "(" + data.network_id + ")";

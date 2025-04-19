@@ -55,6 +55,7 @@ function rebuildDataElementForFormat(format) {
             });
   }
 }
+
 function updateDataElement(data, time) {
     if (format.type == "text") {
         dataContainer.innerText = data;
@@ -96,3 +97,5 @@ dataSocket.addEventListener("close", function (event) {
 });
 
 dataContainer.innerText = "Connecting to data source...";
+
+rebuildDataElementForFormat({type: "output.ship_tracker"});

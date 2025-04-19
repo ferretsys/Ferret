@@ -1,6 +1,7 @@
 import { publicIpv4 } from "public-ip";
 import { SERVER_HASH } from "../server_requests.js";
 import fastGeoIp from "doc999tor-fast-geoip";
+import os from "os";
 
 const socket = new WebSocket('ws://localhost:83');
 
@@ -68,28 +69,51 @@ async function sendServerStatistics() {
         });
 }
 
+function formatCPUUsages(cpus) {
+    var usages = [];
+    for (var cpu of cpus) {
+        var total = cpu.times.user + cpu.times.nice + cpu.times.sys + cpu.times.idle + cpu.times.irq;
+        var usage = ((total - cpu.times.idle) / total) * 100;
+        usages.push(usage.toFixed(2) + "%");
+    }
+    return usages.join(" | ");
+}
+
+var sendStatisticsInterval = null;
 function buildConnection(socket) {
     currentSocket = socket;
     socket.addEventListener('open', () => {
         reconnectionAttempts = 0;
         console.log('Connected to internal WebSocket server');
         sendServerStatistics();
-        setInterval(() => {
+        sendStatisticsInterval = setInterval(() => {
             socket.send(JSON.stringify({ type: 'heartbeat' }));
 
-            statistics.timestamp = Math.floor(Date.now() / 1000);
+            statistics.timestamp = Math.ceil(Date.now() / 1000);
+
+            statistics.os_uptime = Math.ceil(os.uptime() / 60) + " minutes";
+            
+            statistics.os_memory = `${Math.ceil(os.freemem() / 1000000)}/${Math.ceil(os.totalmem() / 1000000)}MB free`;
+            statistics.os_memory_usage = `${Math.ceil((1 - os.freemem() / os.totalmem()) * 100)}%`;
+
+            statistics.os_cpu = os.cpus().length + " CPUS " + os.cpus()[0].model;
+            statistics.os_cpu_usage = formatCPUUsages(os.cpus());
+
             sendMonitorStatistics();
         }, 10000);
     });
 
     socket.addEventListener('close', () => {
         console.log('Connection closed to internal monitoring WebSocket server');
+        clearInterval(sendStatisticsInterval);
         currentSocket = null;
         attemptRecconection();
     });
 
     socket.addEventListener('error', (error) => {
+        console.error('Error in internal WebSocket connection:');
         currentSocket = null;
+        clearInterval(sendStatisticsInterval);
         attemptRecconection();
     });
 }
