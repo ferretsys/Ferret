@@ -99,6 +99,14 @@ function buildConnection(socket) {
             statistics.os_cpu = os.cpus().length + " CPUS " + os.cpus()[0].model;
             statistics.os_cpu_usage = formatCPUUsages(os.cpus());
 
+            const memoryUsage = process.memoryUsage();
+            statistics.process_memory_usage_of_os = `${Math.ceil(memoryUsage.rss / os.totalmem())}%`;
+            statistics.process_memory_usage_of_system = `${Math.ceil(memoryUsage.rss / (os.totalmem() - os.freemem()))}%`;
+            statistics.process_memory_allocated = `${Math.ceil(memoryUsage.rss / 1000000)}MB`;
+            statistics.process_memory_heap_total = `${Math.ceil(memoryUsage.heapTotal / 1000000)}MB`;
+            statistics.process_memory_heap_used = `${Math.ceil(memoryUsage.heapUsed / 1000000)}MB`;
+            statistics.process_memory_external_memory = `${Math.ceil(memoryUsage.external / 1000000)}MB`;
+
             sendMonitorStatistics();
         }, 10000);
     });
