@@ -89,7 +89,6 @@ function buildConnection(socket) {
     });
 
     socket.addEventListener('error', (error) => {
-        console.error('Internal monitoring WebSocket error:', error);
         currentSocket = null;
         attemptRecconection();
     });
