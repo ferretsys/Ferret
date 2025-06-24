@@ -1,8 +1,18 @@
 import {} from "./webhost.js";//Load
 import {} from "./sockets/internal_socket_client.js"; //Load
-import { CONNECTED_COMPUTERS_CHART, networkTokens, SYNCED_COMPUTERS, syncedNetworkData } from "./network_data.js";
+import { CONNECTED_COMPUTERS_CHART, networkTokens, readDataFile, SYNCED_COMPUTERS, syncedNetworkData } from "./network_data.js";
 import { getFileFromClientSourceForComputer } from "./sockets/frontend_sockets.js";
 import { serverStatistics } from "./server_requests.js";
+
+var serverConfig = null;
+export function getServerConfig() {
+    if (!serverConfig) {
+        serverConfig = readDataFile("config.json");
+    }
+    return serverConfig;
+}
+
+console.log("Server configuration loaded", getServerConfig());
 
 var networkByToken = {};
 for (var id in networkTokens) {

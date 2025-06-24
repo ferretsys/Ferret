@@ -2,18 +2,7 @@ import { publicIpv4 } from "public-ip";
 import { SERVER_HASH } from "../server_requests.js";
 import fastGeoIp from "doc999tor-fast-geoip";
 import os from "os";
-
-const socket = new WebSocket('ws://localhost:83');
-
-var reconnectionAttempts = 0;
-
-var serverStartTime = Math.floor(Date.now() / 1000);
-
-var currentSocket = null;
-
-var statistics = {
-    timestamp: 0
-}
+import { getServerConfig } from "../index.js";
 
 function sendMonitorStatistics() {
     if (currentSocket == null) return;
@@ -119,14 +108,11 @@ function buildConnection(socket) {
     });
 
     socket.addEventListener('error', (error) => {
-        console.error('Error in internal WebSocket connection:');
         currentSocket = null;
         clearInterval(sendStatisticsInterval);
         attemptRecconection();
     });
 }
-
-buildConnection(socket);
 
 function attemptRecconection() {
     setTimeout(() => {
@@ -139,4 +125,24 @@ function attemptRecconection() {
         const newSocket = new WebSocket('ws://localhost:83');
         buildConnection(newSocket);
     }, 5000);
+}
+
+const ENABLED = getServerConfig().enableferretmonitorsocket;
+
+if (!ENABLED) {
+    console.log("Ferret monitor socket is disabled in the configuration.");
+} else {
+    const socket = new WebSocket('ws://localhost:83');
+
+    var reconnectionAttempts = 0;
+
+    var serverStartTime = Math.floor(Date.now() / 1000);
+
+    var currentSocket = null;
+
+    var statistics = {
+        timestamp: 0
+    }
+
+    buildConnection(socket);
 }
